@@ -1,0 +1,14 @@
+<div id="{{ css_id }}" class="{{ css_class }}" data-bid="{{ bid }}">
+    <div class="builder-elements-wrapper">
+        {% if(builder) %}
+            <div class="builder-elements-inner">
+                {{ builder }}
+            </div>
+        {% endif %}
+
+    </div>
+    <div class="builder-action-links">
+        {{ links }}
+    </div>
+
+</div>

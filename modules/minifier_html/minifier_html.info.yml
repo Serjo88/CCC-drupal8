@@ -1,0 +1,11 @@
+name: Minifier HTML
+type: module
+description: Minify HTML and any CSS or JS included in your markup
+# core: 8.x
+package: Custom
+
+# Information added by Drupal.org packaging script on 2017-07-02
+version: '8.x-1.1'
+core: '8.x'
+project: 'minifier_html'
+datestamp: 1499021644

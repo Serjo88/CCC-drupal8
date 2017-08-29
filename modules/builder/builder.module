@@ -1,0 +1,2834 @@
+<?php
+
+
+/**
+ * @file
+ * Contains builder.module.
+ */
+
+use Drupal\block;
+use Drupal\builder\BuilderBase;
+use Drupal\builder\BuilderElements;
+use Drupal\Component\Utility\Html;
+use Drupal\Core\Access;
+use Drupal\Core\Archiver;
+use Drupal\core\Database\Database;
+use Drupal\Core\Entity;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Render\Element;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Url;
+use Drupal\file\Entity\File;
+use Drupal\filter\FilterProcessResult;
+use Drupal\image;
+
+/**
+ * Implements of hook_cron
+ */
+function builder_cron() {
+  Database::getConnection()->delete('builder_data')
+    ->condition('status', 0)
+    ->execute();
+
+  Drupal::service('config.factory')->getEditable('builder_cache')->delete();
+
+}
+
+
+/**
+ * Implements hook_help().
+ */
+function builder_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the builder module.
+    case 'help.page.builder':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('Builder') . '</p>';
+      return $output;
+
+    default:
+  }
+}
+
+
+/**
+ * Implements of hook_builder_element_info()
+ */
+
+function builder_builder_element_info() {
+
+  $elements = BuilderElements::info();
+
+  return $elements;
+
+}
+
+/**
+ * Get element by delta
+ */
+
+function builder_get_element_by_delta($delta) {
+  $elements = BuilderBase::getElementsInfo();
+  if (!empty($elements)) {
+    foreach ($elements as $k => $element) {
+      if ($element['#delta'] == $delta) {
+        return $element;
+      }
+    }
+  }
+
+  return FALSE;
+}
+
+/**
+ * Get dependence elements
+ */
+
+function builder_get_depend_elements($depend_delta = '', &$list) {
+  $elements = BuilderBase::getElementsInfo();
+  foreach ($elements as $k => $element) {
+    if ($element['#delta'] == $depend_delta) {
+      $list[$element['#delta']] = $element;
+      if (!empty($element['#depend'])) {
+        builder_get_depend_elements($element['#depend'], $list);
+      }
+    }
+  }
+
+  return $list;
+}
+
+/**
+ * Save an element for new element.
+ */
+function builder_save_element($element, $bid) {
+  $depend = FALSE;
+  if (!empty($element['#depend'])) {
+    $depend = $element['#depend'];
+  }
+  $builder = new BuilderBase($bid);
+
+  $id = !empty($element['#id']) ? $element['#id'] : NULL;
+
+  // if parent is row, and user add new row
+  if (!empty($element['#parent']) && $element['#delta'] == 'row') {
+    $pa = $builder->getElement($element['#parent']);
+    if (!empty($pa['#delta']) && $pa['#delta'] == 'row') {
+      $depend = 'column';
+    }
+  }
+
+  // do this auto add depend element only for add. No for update element.
+  if (!empty($depend) && empty($element['#id'])) {
+    $parent_id = 0;
+    $depend_element = builder_get_depend_elements($depend, $depend_element);
+
+
+    //re order array. we need add as tree.
+    if (!empty($depend_element)) {
+      krsort($depend_element);
+      $i = 0;
+      foreach ($depend_element as $k => $v) {
+
+        if ($i === 0 && isset($element['#parent'])) {
+          $parent = $builder->getElement($element['#parent']);
+          if (!empty($parent['#delta']) && $v['#delta'] == $parent['#delta']) {
+            unset($depend_element[$k]);
+          }
+        }
+        $i++;
+      }
+    }
+    if (isset($parent['#delta']) && $parent['#delta'] == $depend) {
+      $depend_element = array();
+    }
+    if (!empty($depend_element)) {
+
+      foreach ($depend_element as $k => $v) {
+        if ($parent_id) {
+          $v['#parent'] = $parent_id;
+        }
+        else {
+          if (!$parent_id && !empty($element['#parent'])) {
+            $v['#parent'] = $element['#parent'];
+          }
+        }
+        $parent_id = $builder->setElement($v);
+      }
+    }
+
+  }
+  if (!empty($parent_id)) {
+    $element['#parent'] = $parent_id;
+  }
+
+  $builder->setElement($element, $id);
+
+}
+
+/**
+ * Implements of hook_builder_element_configure($delta='', $element)
+ */
+
+function builder_builder_element_configure($delta = '', $element = array()) {
+  $form = array();
+  $type = $element['#type'];
+  $settings = isset($element['#settings']) ? $element['#settings'] : array();
+  $form['builder-dialog-messages'] = array(
+    '#markup' => '<div id="builder-dialog-messages"></div>',
+  );
+  switch ($type) {
+    case 'row':
+
+      $values = isset($element['#settings']) ? $element['#settings'] : array();
+
+      $form['vertical_tabs'] = array(
+        '#type' => 'horizontal_tabs',
+        '#parents' => array('vertical_tabs'),
+
+      );
+
+      $form['general'] = array(
+        '#type' => 'details',
+        '#title' => t('General')->render(),
+        '#group' => 'vertical_tabs',
+        '#open' => FALSE,
+        '#title_display' => t('General'),
+      );
+
+      $form['general']['attributes'] = array(
+        '#type' => 'container',
+      );
+      $form['general']['attributes']['id'] = array(
+        '#type' => 'textfield',
+        '#title' => t('ID')->render(),
+        '#default_value' => isset($values['general']['attributes']['id']) ? $values['general']['attributes']['id'] : '',
+        '#description' => t('Enter html ID for element wrapper.')
+      );
+      $form['general']['attributes']['class'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Extra class name')->render(),
+        '#default_value' => isset($values['general']['attributes']['class']) ? $values['general']['attributes']['class'] : '',
+        '#description' => t('Enter your custom css class name, this will use to your custom css.')
+      );
+
+      $form['general']['inner_class'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Inner class name')->render(),
+        '#default_value' => isset($values['general']['inner_class']) ? $values['general']['inner_class'] : '',
+        '#description' => t('Enter inner extra class name.')
+      );
+
+      $form['design'] = array(
+        '#type' => 'details',
+        '#title' => t('Design')->render(),
+        '#group' => 'vertical_tabs',
+        '#tree' => TRUE,
+
+      );
+
+
+      $form['design']['css_box'] = array(
+        '#type' => 'css_box',
+        '#options' => !empty($values['design']['css_box']) ? $values['design']['css_box'] : array(),
+      );
+
+      break;
+
+
+    case 'column':
+
+
+      $values = isset($element['#settings']) ? $element['#settings'] : array();
+
+      $form['vertical_tabs'] = array(
+        '#type' => 'horizontal_tabs',
+        '#parents' => array('vertical_tabs'),
+
+      );
+
+      $form['general'] = array(
+        '#type' => 'details',
+        '#title' => t('General')->render(),
+        '#group' => 'vertical_tabs',
+
+      );
+
+
+      $grid_options = array();
+
+      for ($i = 1; $i <= 12; $i++) {
+        $grid_options[$i] = $i . '/' . 12;
+      }
+      $form['general']['grid'] = array(
+        '#type' => 'select',
+        '#title' => t('Grid size')->render(),
+        '#description' => t('Select size of column')->render(),
+        '#options' => $grid_options,
+        '#default_value' => isset($values['general']['grid']) ? $values['general']['grid'] : 6,
+      );
+
+      $form['general']['attributes'] = array(
+        '#type' => 'container',
+      );
+      $form['general']['attributes']['id'] = array(
+        '#type' => 'textfield',
+        '#title' => t('ID')->render(),
+        '#default_value' => isset($values['general']['attributes']['id']) ? $values['general']['attributes']['id'] : '',
+        '#description' => t('Enter html ID for element wrapper.')
+      );
+      $form['general']['attributes']['class'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Extra class name')->render(),
+        '#default_value' => isset($values['general']['attributes']['class']) ? $values['general']['attributes']['class'] : '',
+        '#description' => t('Enter your custom css class name, this will use to your custom css.')
+      );
+      $form['general']['attributes']['data-animation'] = array(
+        '#type' => 'select',
+        '#options' => _builder_animate_options(),
+        '#title' => t('Animation'),
+        '#default_value' => isset($values['general']['attributes']['data-animation']) ? $values['general']['attributes']['data-animation'] : '',
+        '#description' => t('Use animation.')->render()
+      );
+
+      $form['design'] = array(
+        '#type' => 'details',
+        '#title' => t('Design')->render(),
+        '#group' => 'vertical_tabs',
+        '#tree' => TRUE,
+
+      );
+
+
+      $form['design']['css_box'] = array(
+        '#type' => 'css_box',
+        '#options' => !empty($values['design']['css_box']) ? $values['design']['css_box'] : array(),
+      );
+
+      break;
+
+    case 'text':
+      $values = isset($element['#settings']) ? $element['#settings'] : array();
+
+      $form['vertical_tabs'] = array(
+        '#type' => 'horizontal_tabs',
+        '#parents' => array('vertical_tabs'),
+
+      );
+
+      $form['general'] = array(
+        '#type' => 'details',
+        '#title' => t('General')->render(),
+        '#group' => 'vertical_tabs',
+
+      );
+
+      $form['general']['attributes'] = array(
+        '#type' => 'details',
+        '#open' => FALSE,
+        '#title' => t('Attributes settings')->render(),
+      );
+      $form['general']['attributes']['id'] = array(
+        '#type' => 'textfield',
+        '#title' => t('ID')->render(),
+        '#default_value' => isset($values['general']['attributes']['id']) ? $values['general']['attributes']['id'] : '',
+        '#description' => t('Enter html ID for element wrapper.')->render(),
+      );
+      $form['general']['attributes']['class'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Extra class name')->render(),
+        '#default_value' => isset($values['general']['attributes']['class']) ? $values['general']['attributes']['class'] : '',
+        '#description' => t('Enter your custom css class name, this will use to your custom css.')->render()
+      );
+      $form['general']['attributes']['data-animation'] = array(
+        '#type' => 'select',
+        '#options' => _builder_animate_options(),
+        '#title' => t('Animation'),
+        '#default_value' => isset($values['general']['attributes']['data-animation']) ? $values['general']['attributes']['data-animation'] : '',
+        '#description' => t('Use animation.')->render()
+      );
+
+      $form['general']['text'] = array(
+        '#type' => 'text_format',
+        '#default_value' => isset($settings['general']['text']['value']) ? $settings['general']['text']['value'] : '',
+        '#format' => isset($settings['general']['text']['format']) ? $settings['general']['text']['format'] : filter_default_format(),
+      );
+      $form['design'] = array(
+        '#type' => 'details',
+        '#title' => t('Design')->render(),
+        '#group' => 'vertical_tabs',
+        '#tree' => TRUE,
+
+      );
+
+      $form['design']['css_box'] = array(
+        '#type' => 'css_box',
+        '#options' => !empty($values['design']['css_box']) ? $values['design']['css_box'] : array(),
+      );
+
+      break;
+
+    case 'image':
+
+      $values = isset($element['#settings']) ? $element['#settings'] : array();
+      $form['vertical_tabs'] = array(
+        '#type' => 'horizontal_tabs',
+        '#parents' => array('vertical_tabs'),
+
+      );
+      $form['general'] = array(
+        '#type' => 'details',
+        '#title' => t('General')->render(),
+        '#group' => 'vertical_tabs',
+
+      );
+
+
+      $form['general']['image'] = array(
+        '#type' => 'managed_file',
+        '#title' => t('Upload image'),
+        '#description' => t('Allowed extensions: gif png jpg jpeg'),
+        '#default_value' => isset($settings['general']['image']) ? $settings['general']['image'] : '',
+        '#upload_location' => 'public://',
+        '#upload_validators' => array(
+          'file_validate_extensions' => array('gif png jpg jpeg'),
+          // Pass the maximum file size in bytes
+          'file_validate_size' => array(10 * 3024 * 3024),
+        ),
+        '#required' => TRUE,
+      );
+      $form['general']['title'] = array(
+        '#default_value' => isset($settings['general']['title']) ? $settings['general']['title'] : '',
+        '#title' => t('Title'),
+        '#type' => 'textfield',
+      );
+      $form['general']['image_alt'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Image alt'),
+        '#default_value' => isset($settings['general']['image_alt']) ? $settings['general']['image_alt'] : '',
+      );
+
+      if (\Drupal::moduleHandler()->moduleExists('image')) {
+        $image_style_options = array('' => t('None'));
+        $img_styles = \Drupal::entityManager()
+          ->getStorage('image_style')
+          ->loadMultiple();
+        if (!empty($img_styles)) {
+          foreach ($img_styles as $k => $v) {
+            $image_style_options[$v->getName()] = $v->label();
+          }
+        }
+        $form['general']['image_style'] = array(
+          '#type' => 'select',
+          '#title' => t('Image style'),
+          '#description' => t('Use your image style for image view. Default will be original of your image.'),
+          '#default_value' => isset($settings['general']['image_style']) ? $settings['general']['image_style'] : '',
+          '#options' => $image_style_options,
+        );
+      }
+      $form['general']['image_link'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Image link'),
+        '#default_value' => isset($settings['general']['image_link']) ? $settings['general']['image_link'] : '',
+      );
+
+      $form['general']['attributes'] = array(
+        '#type' => 'details',
+        '#open' => FALSE,
+        '#title' => t('Attributes settings')
+      );
+      $form['general']['attributes']['id'] = array(
+        '#type' => 'textfield',
+        '#title' => t('ID'),
+        '#default_value' => isset($settings['general']['attributes']['id']) ? $settings['general']['attributes']['id'] : '',
+        '#description' => t('Enter html ID for element wrapper.')
+      );
+      $form['general']['attributes']['class'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Extra class name'),
+        '#default_value' => isset($settings['general']['attributes']['class']) ? $settings['general']['attributes']['class'] : '',
+        '#description' => t('Enter your custom css class name, this will use to your custom css.')
+      );
+
+      $form['general']['attributes']['data-animation'] = array(
+        '#type' => 'select',
+        '#options' => _builder_animate_options(),
+        '#title' => t('Animation'),
+        '#default_value' => isset($values['general']['attributes']['data-animation']) ? $values['general']['attributes']['data-animation'] : '',
+        '#description' => t('Use animation.')->render()
+      );
+
+
+      $form['design'] = array(
+        '#type' => 'details',
+        '#title' => t('Design'),
+        '#group' => 'vertical_tabs',
+        '#tree' => TRUE,
+
+      );
+
+      $form['design']['css_box'] = array(
+        '#type' => 'css_box',
+        '#options' => !empty($values['design']['css_box']) ? $values['design']['css_box'] : array(),
+        '#validated' => TRUE,
+      );
+
+
+      break;
+
+    case 'node':
+
+
+      $values = isset($element['#settings']) ? $element['#settings'] : array();
+
+      $form['vertical_tabs'] = array(
+        '#type' => 'horizontal_tabs',
+        '#parents' => array('vertical_tabs'),
+
+      );
+
+      $form['general'] = array(
+        '#type' => 'details',
+        '#title' => t('General'),
+        '#group' => 'vertical_tabs',
+
+      );
+
+      $form['general']['attributes'] = array(
+        '#type' => 'details',
+        '#open' => FALSE,
+        '#title' => t('Attributes settings'),
+      );
+      $form['general']['attributes']['id'] = array(
+        '#type' => 'textfield',
+        '#title' => t('ID'),
+        '#default_value' => isset($values['general']['attributes']['id']) ? $values['general']['attributes']['id'] : '',
+        '#description' => t('Enter html ID for element wrapper.')
+      );
+      $form['general']['attributes']['class'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Extra class name'),
+        '#default_value' => isset($values['general']['attributes']['class']) ? $values['general']['attributes']['class'] : '',
+        '#description' => t('Enter your custom css class name, this will use to your custom css.')
+      );
+
+      $form['general']['attributes']['data-animation'] = array(
+        '#type' => 'select',
+        '#options' => _builder_animate_options(),
+        '#title' => t('Animation'),
+        '#default_value' => isset($values['general']['attributes']['data-animation']) ? $values['general']['attributes']['data-animation'] : '',
+        '#description' => t('Use animation.')->render()
+      );
+
+
+      $node_entity_default = NULL;
+      $nid = !empty($settings['general']['node']) ? $settings['general']['node'] : '';
+      if ($nid) {
+        $node_entity_default = \Drupal::entityManager()
+          ->getStorage('node')
+          ->load($nid);
+      }
+
+      $form['general']['node'] = array(
+        '#type' => 'entity_autocomplete',
+        '#title' => t('Node'),
+        '#default_value' => $node_entity_default,
+        '#target_type' => 'node',
+        '#required' => TRUE,
+      );
+
+      $form['#validate'][] = '_builder_element_node_validate';
+
+      $form['general']['view_mode'] = array(
+        '#type' => 'select',
+        '#title' => t('View mode'),
+        '#options' => builder_get_entity_view_modes('node'),
+        '#default_value' => isset($settings['general']['view_mode']) ? $settings['general']['view_mode'] : 'full',
+      );
+      $form['general']['hide_node_title'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Hide node title'),
+        '#default_value' => isset($settings['general']['hide_node_title']) ? $settings['general']['hide_node_title'] : FALSE,
+      );
+
+
+      $form['design'] = array(
+        '#type' => 'details',
+        '#title' => t('Design'),
+        '#group' => 'vertical_tabs',
+        '#tree' => TRUE,
+
+      );
+
+      $form['design']['css_box'] = array(
+        '#type' => 'css_box',
+        '#options' => !empty($values['design']['css_box']) ? $values['design']['css_box'] : array(),
+      );
+
+
+      break;
+
+
+    case 'contact_form':
+      $values = isset($element['#settings']) ? $element['#settings'] : array();
+
+      $form['vertical_tabs'] = array(
+        '#type' => 'horizontal_tabs',
+        '#parents' => array('vertical_tabs'),
+
+      );
+
+      $form['general'] = array(
+        '#type' => 'details',
+        '#title' => t('General'),
+        '#group' => 'vertical_tabs',
+
+      );
+
+      $form['general']['attributes'] = array(
+        '#type' => 'details',
+        '#open' => FALSE,
+        '#title' => t('Attributes settings'),
+      );
+      $form['general']['attributes']['id'] = array(
+        '#type' => 'textfield',
+        '#title' => t('ID'),
+        '#default_value' => isset($values['general']['attributes']['id']) ? $values['general']['attributes']['id'] : '',
+        '#description' => t('Enter html ID for element wrapper.')
+      );
+      $form['general']['attributes']['class'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Extra class name'),
+        '#default_value' => isset($values['general']['attributes']['class']) ? $values['general']['attributes']['class'] : '',
+        '#description' => t('Enter your custom css class name, this will use to your custom css.')
+      );
+
+      $form['general']['attributes']['data-animation'] = array(
+        '#type' => 'select',
+        '#options' => _builder_animate_options(),
+        '#title' => t('Animation'),
+        '#default_value' => isset($values['general']['attributes']['data-animation']) ? $values['general']['attributes']['data-animation'] : '',
+        '#description' => t('Use animation.')->render()
+      );
+
+      $form['general']['markup'] = array(
+        '#type' => 'markup',
+        '#markup' => '<div class="description"><p>' . t('Configure your contact forms') . ' ' . Drupal::l(t('here'), new Url('entity.contact_form.collection')) . '</p></div>',
+      );
+      $contact_options = \Drupal::entityManager()
+        ->getStorage('contact_form')
+        ->loadMultiple();
+      foreach ($contact_options as $key => $option) {
+        $contact_options[$key] = $option->label();
+      }
+
+      $form['general']['contact_form'] = array(
+        '#type' => 'select',
+        '#title' => t('Contact form'),
+        '#options' => $contact_options,
+        '#default_value' => isset($settings['general']['contact_form']) ? $settings['general']['contact_form'] : 'feedback',
+        '#required' => TRUE,
+      );
+      $form['design'] = array(
+        '#type' => 'details',
+        '#title' => t('Design'),
+        '#group' => 'vertical_tabs',
+        '#tree' => TRUE,
+
+      );
+
+      $form['design']['css_box'] = array(
+        '#type' => 'css_box',
+        '#options' => !empty($values['design']['css_box']) ? $values['design']['css_box'] : array(),
+      );
+
+      break;
+
+    case 'embed_views':
+      $values = isset($element['#settings']) ? $element['#settings'] : array();
+
+      $form['vertical_tabs'] = array(
+        '#type' => 'horizontal_tabs',
+        '#parents' => array('vertical_tabs'),
+
+      );
+
+      $form['general'] = array(
+        '#type' => 'details',
+        '#title' => t('General'),
+        '#group' => 'vertical_tabs',
+
+      );
+
+      $form['general']['attributes'] = array(
+        '#type' => 'details',
+        '#open' => FALSE,
+        '#title' => t('Attributes settings'),
+      );
+      $form['general']['attributes']['id'] = array(
+        '#type' => 'textfield',
+        '#title' => t('ID'),
+        '#default_value' => isset($values['general']['attributes']['id']) ? $values['general']['attributes']['id'] : '',
+        '#description' => t('Enter html ID for element wrapper.')
+      );
+      $form['general']['attributes']['class'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Extra class name'),
+        '#default_value' => isset($values['general']['attributes']['class']) ? $values['general']['attributes']['class'] : '',
+        '#description' => t('Enter your custom css class name, this will use to your custom css.')
+      );
+
+      $form['general']['attributes']['data-animation'] = array(
+        '#type' => 'select',
+        '#options' => _builder_animate_options(),
+        '#title' => t('Animation'),
+        '#default_value' => isset($values['general']['attributes']['data-animation']) ? $values['general']['attributes']['data-animation'] : '',
+        '#description' => t('Use animation.')->render()
+      );
+
+      $form['general']['views'] = array(
+        '#title' => t('Select Views'),
+        '#type' => 'select',
+        '#options' => _builder_get_views(),
+        '#default_value' => isset($values['general']['views']) ? $values['general']['views'] : '',
+      );
+
+      $form['design'] = array(
+        '#type' => 'details',
+        '#title' => t('Design'),
+        '#group' => 'vertical_tabs',
+        '#tree' => TRUE,
+
+      );
+
+      $form['design']['css_box'] = array(
+        '#type' => 'css_box',
+        '#options' => !empty($values['design']['css_box']) ? $values['design']['css_box'] : array(),
+      );
+
+      break;
+
+
+    case 'block':
+      $values = isset($element['#settings']) ? $element['#settings'] : array();
+
+      $form['vertical_tabs'] = array(
+        '#type' => 'horizontal_tabs',
+        '#parents' => array('vertical_tabs'),
+
+      );
+
+      $form['general'] = array(
+        '#type' => 'details',
+        '#title' => t('General'),
+        '#group' => 'vertical_tabs',
+
+      );
+
+      $form['general']['attributes'] = array(
+        '#type' => 'details',
+        '#open' => FALSE,
+        '#title' => t('Attributes settings'),
+      );
+      $form['general']['attributes']['id'] = array(
+        '#type' => 'textfield',
+        '#title' => t('ID'),
+        '#default_value' => isset($values['general']['attributes']['id']) ? $values['general']['attributes']['id'] : '',
+        '#description' => t('Enter html ID for element wrapper.')
+      );
+      $form['general']['attributes']['class'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Extra class name'),
+        '#default_value' => isset($values['general']['attributes']['class']) ? $values['general']['attributes']['class'] : '',
+        '#description' => t('Enter your custom css class name, this will use to your custom css.')
+      );
+
+      $form['general']['attributes']['data-animation'] = array(
+        '#type' => 'select',
+        '#options' => _builder_animate_options(),
+        '#title' => t('Animation'),
+        '#default_value' => isset($values['general']['attributes']['data-animation']) ? $values['general']['attributes']['data-animation'] : '',
+        '#description' => t('Use animation.')->render()
+      );
+
+
+      $form['design'] = array(
+        '#type' => 'details',
+        '#title' => t('Design'),
+        '#group' => 'vertical_tabs',
+        '#tree' => TRUE,
+
+      );
+
+      $form['design']['css_box'] = array(
+        '#type' => 'css_box',
+        '#options' => !empty($values['design']['css_box']) ? $values['design']['css_box'] : array(),
+      );
+
+      break;
+
+    case 'google_map':
+      $values = isset($element['#settings']) ? $element['#settings'] : array();
+
+      $form['vertical_tabs'] = array(
+        '#type' => 'horizontal_tabs',
+        '#parents' => array('vertical_tabs'),
+
+      );
+
+      $form['general'] = array(
+        '#type' => 'details',
+        '#title' => t('General'),
+        '#group' => 'vertical_tabs',
+
+      );
+
+      $form['general']['attributes'] = array(
+        '#type' => 'details',
+        '#open' => FALSE,
+        '#title' => t('Attributes settings'),
+      );
+      $form['general']['attributes']['id'] = array(
+        '#type' => 'textfield',
+        '#title' => t('ID'),
+        '#default_value' => isset($values['general']['attributes']['id']) ? $values['general']['attributes']['id'] : '',
+        '#description' => t('Enter html ID for element wrapper.')
+      );
+      $form['general']['attributes']['class'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Extra class name'),
+        '#default_value' => isset($values['general']['attributes']['class']) ? $values['general']['attributes']['class'] : '',
+        '#description' => t('Enter your custom css class name, this will use to your custom css.')
+      );
+
+      $form['general']['attributes']['data-animation'] = array(
+        '#type' => 'select',
+        '#options' => _builder_animate_options(),
+        '#title' => t('Animation'),
+        '#default_value' => isset($values['general']['attributes']['data-animation']) ? $values['general']['attributes']['data-animation'] : '',
+        '#description' => t('Use animation.')->render()
+      );
+
+      $form['general']['marker'] = array(
+        '#type' => 'managed_file',
+        '#title' => t('Marker'),
+        '#description' => t('Allowed extensions: gif png jpg jpeg'),
+        '#default_value' => isset($settings['general']['marker']) ? $settings['general']['marker'] : '',
+        '#upload_location' => 'public://',
+        '#upload_validators' => array(
+          'file_validate_extensions' => array('gif png jpg jpeg'),
+          // Pass the maximum file size in bytes
+          'file_validate_size' => array(10 * 3024 * 3024),
+        ),
+        '#required' => TRUE,
+      );
+
+      $form['general']['zoom'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Zoom'),
+        '#default_value' => isset($values['general']['zoom']) ? $values['general']['zoom'] : 14,
+        '#description' => t('Map Zoom size. Default is:  14')
+      );
+      $form['general']['address'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Address'),
+        '#default_value' => isset($values['general']['address']) ? $values['general']['address'] : t('412 7th Ave, New York'),
+        '#description' => t('Map address.')
+      );
+      $form['general']['address_1'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Address 1'),
+        '#default_value' => isset($values['general']['address_1']) ? $values['general']['address_1'] : '',
+        '#description' => t('Map address.')
+      );
+      $form['general']['address_2'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Address 2'),
+        '#default_value' => isset($values['general']['address_2']) ? $values['general']['address_2'] : '',
+        '#description' => t('Map address.')
+      );
+      $form['design'] = array(
+        '#type' => 'details',
+        '#title' => t('Design'),
+        '#group' => 'vertical_tabs',
+        '#tree' => TRUE,
+
+      );
+
+      $form['design']['css_box'] = array(
+        '#type' => 'css_box',
+        '#options' => !empty($values['design']['css_box']) ? $values['design']['css_box'] : array(),
+      );
+
+      break;
+
+
+    case 'youtube':
+
+      $values = isset($element['#settings']) ? $element['#settings'] : array();
+
+      $form['vertical_tabs'] = array(
+        '#type' => 'horizontal_tabs',
+        '#parents' => array('vertical_tabs'),
+
+      );
+
+      $form['general'] = array(
+        '#type' => 'details',
+        '#title' => t('General'),
+        '#group' => 'vertical_tabs',
+
+      );
+
+      $form['general']['attributes'] = array(
+        '#type' => 'details',
+        '#open' => FALSE,
+        '#title' => t('Attributes settings'),
+      );
+      $form['general']['attributes']['id'] = array(
+        '#type' => 'textfield',
+        '#title' => t('ID'),
+        '#default_value' => isset($values['general']['attributes']['id']) ? $values['general']['attributes']['id'] : '',
+        '#description' => t('Enter html ID for element wrapper.')
+      );
+      $form['general']['attributes']['class'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Extra class name'),
+        '#default_value' => isset($values['general']['attributes']['class']) ? $values['general']['attributes']['class'] : '',
+        '#description' => t('Enter your custom css class name, this will use to your custom css.')
+      );
+
+      $form['general']['attributes']['data-animation'] = array(
+        '#type' => 'select',
+        '#options' => _builder_animate_options(),
+        '#title' => t('Animation'),
+        '#default_value' => isset($values['general']['attributes']['data-animation']) ? $values['general']['attributes']['data-animation'] : '',
+        '#description' => t('Use animation.')->render()
+      );
+
+
+      $form['general']['youtube_url'] = array(
+        '#title' => t('Youtube video URL'),
+        '#type' => 'textfield',
+        '#default_value' => isset($settings['general']['youtube_url']) ? $settings['general']['youtube_url'] : '',
+        '#required' => TRUE,
+      );
+      $form['general']['video_width'] = array(
+        '#title' => t('Width'),
+        '#type' => 'textfield',
+        '#default_value' => isset($settings['general']['video_width']) ? $settings['general']['video_width'] : 640,
+        '#required' => TRUE,
+      );
+      $form['general']['video_height'] = array(
+        '#title' => t('Height'),
+        '#type' => 'textfield',
+        '#default_value' => isset($settings['general']['video_height']) ? $settings['general']['video_height'] : 390,
+        '#required' => TRUE,
+      );
+      $form['general']['video_auto_play'] = array(
+        '#title' => t('Auto play'),
+        '#type' => 'checkbox',
+        '#default_value' => isset($settings['general']['video_auto_play']) ? $settings['general']['video_auto_play'] : FALSE,
+        '#description' => t('Check if you want video auto play on page load.'),
+      );
+      $form['general']['video_responsive'] = array(
+        '#title' => t('Responsive'),
+        '#type' => 'checkbox',
+        '#default_value' => isset($settings['general']['video_responsive']) ? $settings['general']['video_responsive'] : 1,
+        '#description' => t('Check if you want video embed auto resize fit your column.'),
+      );
+      $form['#validate'][] = 'builder_youtube_video_validate';
+
+
+      $form['design'] = array(
+        '#type' => 'details',
+        '#title' => t('Design'),
+        '#group' => 'vertical_tabs',
+        '#tree' => TRUE,
+
+      );
+
+      $form['design']['css_box'] = array(
+        '#type' => 'css_box',
+        '#options' => !empty($values['design']['css_box']) ? $values['design']['css_box'] : array(),
+      );
+
+      break;
+
+    case 'vimeo':
+
+      $values = isset($element['#settings']) ? $element['#settings'] : array();
+
+      $form['vertical_tabs'] = array(
+        '#type' => 'horizontal_tabs',
+        '#parents' => array('vertical_tabs'),
+
+      );
+
+      $form['general'] = array(
+        '#type' => 'details',
+        '#title' => t('General'),
+        '#group' => 'vertical_tabs',
+
+      );
+
+      $form['general']['attributes'] = array(
+        '#type' => 'details',
+        '#open' => FALSE,
+        '#title' => t('Attributes settings'),
+      );
+      $form['general']['attributes']['id'] = array(
+        '#type' => 'textfield',
+        '#title' => t('ID'),
+        '#default_value' => isset($values['general']['attributes']['id']) ? $values['general']['attributes']['id'] : '',
+        '#description' => t('Enter html ID for element wrapper.')
+      );
+      $form['general']['attributes']['class'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Extra class name'),
+        '#default_value' => isset($values['general']['attributes']['class']) ? $values['general']['attributes']['class'] : '',
+        '#description' => t('Enter your custom css class name, this will use to your custom css.')
+      );
+
+      $form['general']['attributes']['data-animation'] = array(
+        '#type' => 'select',
+        '#options' => _builder_animate_options(),
+        '#title' => t('Animation'),
+        '#default_value' => isset($values['general']['attributes']['data-animation']) ? $values['general']['attributes']['data-animation'] : '',
+        '#description' => t('Use animation.')->render()
+      );
+
+      $form['general']['vimeo_url'] = array(
+        '#title' => t('Vimeo URL'),
+        '#type' => 'textfield',
+        '#default_value' => isset($settings['general']['vimeo_url']) ? $settings['general']['vimeo_url'] : '',
+        '#required' => TRUE,
+      );
+      $form['general']['video_width'] = array(
+        '#title' => t('Width'),
+        '#type' => 'textfield',
+        '#default_value' => isset($settings['general']['video_width']) ? $settings['general']['video_width'] : 640,
+        '#required' => TRUE,
+      );
+      $form['general']['video_height'] = array(
+        '#title' => t('Height'),
+        '#type' => 'textfield',
+        '#default_value' => isset($settings['general']['video_height']) ? $settings['general']['video_height'] : 390,
+        '#required' => TRUE,
+      );
+      $form['general']['video_auto_play'] = array(
+        '#title' => t('Auto play'),
+        '#type' => 'checkbox',
+        '#default_value' => isset($settings['general']['video_auto_play']) ? $settings['general']['video_auto_play'] : FALSE,
+        '#description' => t('Play the video automatically on load. Defaults to 0. Note that this won’t work on some devices.'),
+      );
+      $form['general']['video_responsive'] = array(
+        '#title' => t('Responsive'),
+        '#type' => 'checkbox',
+        '#default_value' => isset($settings['general']['video_responsive']) ? $settings['general']['video_responsive'] : TRUE,
+        '#description' => t('Check if you want video embed auto resize fit your column.'),
+      );
+      $form['#validate'][] = 'builder_vimeo_validate';
+
+
+      $form['design'] = array(
+        '#type' => 'details',
+        '#title' => t('Design'),
+        '#group' => 'vertical_tabs',
+        '#tree' => TRUE,
+
+      );
+
+      $form['design']['css_box'] = array(
+        '#type' => 'css_box',
+        '#options' => !empty($values['design']['css_box']) ? $values['design']['css_box'] : array(),
+      );
+
+      break;
+
+
+  }
+
+
+  return $form;
+}
+
+
+/**
+ * Implements of hook_builder_element_view($delta ='', $element = array())
+ */
+
+function builder_builder_element_view($delta = '', $element = array()) {
+
+  $element['#editing'] = FALSE;
+  if (!empty($element['#bid'])) {
+    $element['#editing'] = TRUE;
+  }
+  $type = $element['#type'];
+  $settings = isset($element['#settings']) ? $element['#settings'] : array();
+
+  $element['#attributes']['class'][] = 'builder-element';
+  $element['#attributes']['class'][] = $element['#id'];
+  if (!empty($element['#parent'])) {
+    $element['#attributes']['class'][] = 'builder-element-is-children';
+  }
+  else {
+    $element['#attributes']['class'][] = 'builder-element-is-parent';
+  }
+  if (!empty($element['#settings']['general']['type'])) {
+    $element['#attributes']['class'][] = $element['#type'];
+  }
+  if (!empty($element['#settings']['general']['attributes']['class'])) {
+    $element['#attributes']['class'][] = $element['#settings']['general']['attributes']['class'];
+  }
+  $element['#attributes']['class'][] = 'builder-element-type-' . $element['#type'];
+  $element['#attributes']['class'][] = 'builder-element-delta-' . $element['#delta'];
+
+  $id = !empty($element['#settings']['general']['attributes']['id']) ? $element['#settings']['general']['attributes']['id'] : $element['#id'];
+  $element['#attributes']['id'] = $id;
+
+
+  switch ($type) {
+    case 'row':
+      if (empty($element['#editing'])) {
+        $element['#attributes']['class'][] = 'builder-row';
+        $element['#attributes']['class'][] = 'row';
+      }
+      break;
+
+    case 'column':
+
+      $grid = isset($settings['general']['grid']) ? $settings['general']['grid'] : 6;
+      $element['#attributes']['class'][] = 'col-md-' . $grid;
+      break;
+    case 'text':
+
+      $element['#attributes']['class'][] = 'builder-element-no-children';
+      $element['#children'] = isset($settings['general']['text']['value']) ? check_markup($settings['general']['text']['value'], $settings['general']['text']['format']) : '';
+      break;
+
+    case 'image':
+      $image_content = '';
+      if (!empty($settings['general']['image'])) {
+        $fid = $settings['general']['image'];
+        $file = File::load($fid[0]);
+
+        if (!empty($file)) {
+          $image = \Drupal::service('image.factory')->get($file->getFileUri());
+
+          if ($image->isValid()) {
+            $width = $image->getWidth();
+            $height = $image->getHeight();
+          }
+          $theme = 'image';
+          if (!empty($settings['general']['image_style'])) {
+            $theme = 'image_style';
+          }
+          $image_content = array(
+            '#theme' => $theme,
+            '#uri' => $file->getFileUri(),
+            '#style_name' => isset($settings['general']['image_style']) ? $settings['general']['image_style'] : NULL,
+            '#title' => isset($settings['general']['title']) ? $settings['general']['title'] : '',
+            '#alt' => isset($settings['general']['image_alt']) ? $settings['general']['image_alt'] : '',
+            '#width' => isset($width) ? $width : NULL,
+            '#height' => isset($height) ? $height : NULL,
+          );
+
+        }
+      }
+
+      if (!empty($settings['general']['image_link'])) {
+        $image_url = '#';
+        $path = $settings['general']['image_link'];
+        if ($path !== '#') {
+          $image_url = builder_url($path);
+        }
+        $content = render($image_content);
+        $image_content = array(
+          '#markup' => "<a href=\"$image_url\">$content</a>"
+        );
+      }
+      $element['#children'] = $image_content;
+
+      break;
+
+    case 'node':
+
+      $nid = !empty($settings['general']['node']) ? $settings['general']['node'] : NULL;
+      if ($nid) {
+        $entity = \Drupal::entityManager()->getStorage('node')->load($nid);
+
+        $hide_title = isset($settings['general']['hide_node_title']) ? $settings['general']['hide_node_title'] : FALSE;
+        if ($hide_title) {
+          $entity->setTitle(FALSE);
+        }
+
+        if ($entity && $entity->access('view')) {
+          $view_mode = !empty($settings['general']['view_mode']) ? $settings['general']['view_mode'] : 'full';
+          $node_view = \Drupal::getContainer()
+            ->get('entity.manager')
+            ->getViewBuilder('node');
+          $node_output = $node_view->view($entity, $view_mode);
+          $element['#children'] = $node_output;
+        }
+      }
+
+
+      break;
+
+    case 'block':
+
+
+      $entity = @unserialize($element['#entity']);
+      if ($entity->access('view')) {
+        $block_title = isset($settings['general']['title']) ? $settings['general']['title'] : '';
+        $plugin = $entity->getPlugin();
+        $plugin_id = $plugin->getPluginId();
+        $base_id = $plugin->getBaseId();
+
+        $derivative_id = $plugin->getDerivativeId();
+        $configuration = $plugin->getConfiguration();
+        $configuration['label'] = $block_title;
+        if ($block_title) {
+          $configuration['label_display'] = TRUE;
+        }
+        if ($element['#editing'] && $base_id == 'views_block') {
+          $build = array(
+            '#markup' => t('<span class="disabled">@title</span>', array('@title' => 'The block created by Views')),
+            '#type' => 'markup',
+          );
+        }
+        else {
+          $build = [
+            '#theme' => 'block',
+            '#attributes' => [],
+            '#weight' => $entity->getWeight(),
+            '#configuration' => $configuration,
+            '#plugin_id' => $plugin_id,
+            '#base_plugin_id' => $base_id,
+            '#derivative_plugin_id' => $derivative_id,
+            '#id' => $entity->id(),
+            '#block' => $entity,
+            'content' => \Drupal::entityManager()
+              ->getViewBuilder('block')
+              ->view($entity),
+          ];
+        }
+
+
+        $element['#children'] = render($build); //$block_output;
+
+
+      }
+
+      break;
+
+    case 'youtube':
+      $youtube_content = '';
+      if (!empty($settings['general']['youtube_url'])) {
+        $youtube_url = $settings['general']['youtube_url'];
+        $youtube_id = builder_youtube_video_id($youtube_url);
+
+        if ($youtube_id) {
+          $auto_play = 0;
+          $width = isset($settings['general']['video_width']) ? $settings['general']['video_width'] : 640;
+          $height = isset($settings['general']['video_height']) ? $settings['general']['video_height'] : 390;
+          $class = 'builder-video-wrapper';
+          if (isset($settings['general']['video_responsive']) && $settings['general']['video_responsive']) {
+            $class .= ' builder-video-responsive';
+          }
+          if (isset($settings['general']['video_auto_play']) && $settings['general']['video_auto_play']) {
+            $auto_play = 1;
+          }
+          $youtube_content = '<div class="' . $class . '"><iframe width="' . $width . '" height="' . $height . '" src="http://www.youtube.com/embed/' . $youtube_id . '?rel=0&hd=1&autoplay=' . $auto_play . '" frameborder="0" allowfullscreen></iframe></div>';
+        }
+      }
+
+      $element['#children'] = check_markup($youtube_content, 'full_html');
+
+      break;
+
+    case 'vimeo':
+
+      $vimeo_content = '';
+      if (!empty($settings['general']['vimeo_url'])) {
+        $vimeo_url = $settings['general']['vimeo_url'];
+        $vimeo_id = builder_vimeo_video_id($vimeo_url);
+        if ($vimeo_id) {
+          $auto_play = 0;
+          $width = isset($settings['general']['video_width']) ? $settings['general']['video_width'] : 640;
+          $height = isset($settings['general']['video_height']) ? $settings['general']['video_height'] : 390;
+          $class = 'builder-video-wrapper';
+          if (isset($settings['general']['video_responsive']) && $settings['general']['video_responsive']) {
+            $class .= ' builder-video-responsive';
+          }
+          if (isset($settings['general']['video_auto_play']) && $settings['general']['video_auto_play']) {
+            $auto_play = 1;
+          }
+          $vimeo_content = '<div class="' . $class . '"><iframe src="//player.vimeo.com/video/' . $vimeo_id . '?autoplay=' . $auto_play . '" width="' . $width . '" height="' . $height . '" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe></div>';
+        }
+      }
+      $element['#children'] = check_markup($vimeo_content, 'full_html');
+
+      break;
+
+
+    case 'contact_form':
+
+      if ($element['#editing']) {
+        $build = array(
+          '#markup' => t('<span class="disabled">@title</span>', array('@title' => 'Contact form: Preview is not available in edit mode.')),
+          '#type' => 'markup',
+        );
+
+      }
+      else {
+        $contact_form_key = !empty($settings['general']['contact_form']) ? $settings['general']['contact_form'] : 'feedback';
+        if (!empty($contact_form_key)) {
+          $contact_form = \Drupal::entityManager()
+            ->getStorage('contact_form')
+            ->load($contact_form_key);
+
+          $contact_message = NULL;
+          if ($contact_form) {
+            $contact_message = \Drupal::entityManager()
+              ->getStorage('contact_message')
+              ->create(['contact_form' => $contact_form->id()]);
+          }
+
+          if ($contact_message->isPersonal()) {
+            $user = \Drupal::routeMatch()->getParameter('user');
+            $contact_message->set('recipient', $user);
+          }
+          $form = \Drupal::getContainer()
+            ->get('entity.form_builder')->getForm($contact_message);
+          $form['#cache']['contexts'][] = 'user.permissions';
+
+          $renderer = \Drupal::service('renderer');
+          $renderer->addCacheableDependency($form, $contact_form);
+          $build = $form;
+        }
+      }
+
+      if (isset($build)) {
+        $element['#children'] = render($build);
+      }
+
+
+      break;
+
+    case 'google_map':
+      $marker_url = '';
+      if (!empty($settings['general']['marker'])) {
+        $marker_fid = $settings['general']['marker'][0];
+        $marker = file_load($marker_fid);
+        $marker_url = file_create_url($marker->getFileUri());
+      }
+      $map_settings = array(
+        'zoom' => isset($settings['general']['zoom']) ? (int) $settings['general']['zoom'] : 14,
+        'icon' => $marker_url,
+        'address' => array(),
+      );
+
+      if (isset($settings['general']['address'])) {
+        $map_settings['address'][] = $settings['general']['address'];
+      }
+      if (!empty($settings['general']['address_1'])) {
+        $map_settings['address'][] = $settings['general']['address_1'];
+      }
+      if (!empty($settings['general']['address_2'])) {
+        $map_settings['address'][] = $settings['general']['address_2'];
+      }
+
+      $map_markup = array(
+        '#type' => 'html_tag',
+        '#tag' => 'div',
+        '#attributes' => array(
+          'class' => 'builder-google-map',
+          'data-settings' => json_encode($map_settings),
+        ),
+        '#attached' => array(
+          'library' => array(
+            'builder/builder_map'
+          )
+        ),
+      );
+
+      $element['#children'] = render($map_markup);
+
+      break;
+
+    case 'embed_views':
+
+      if (\Drupal::moduleHandler()
+          ->moduleExists('views') && !empty($settings['general']['views'])
+      ) {
+        $views = explode('**', $settings['general']['views']);
+        $view_name = $views[0];
+        $view_display = $views[1];
+        $build = views_embed_view($view_name, $view_display);
+
+      }
+      else {
+        $build = array(
+          '#markup' => t('<span class="disabled">@title</span>', array('@title' => 'Could not embed the views!')),
+          '#type' => 'markup',
+        );
+      }
+      $element['#children'] = render($build);
+
+      break;
+
+  }
+
+  $design = theme_builder_element_design(array('element' => $element));
+
+  if (!empty($design['css'])) {
+    builder_add_css_inline($design['css'], 'builder');
+  }
+  $element['#theme_wrappers'] = array(
+    'builder_element' => array(),
+  );
+
+
+  return $element;
+
+}
+
+/**
+ * Implements of hook_builder_element_save($bid, $delta, $element)
+ */
+
+function builder_builder_element_save($bid, $delta, $element) {
+  $settings = isset($element['#settings']) ? $element['#settings'] : array();
+
+  $background_images = !empty($settings['design']['css_box']['extra']['background']['image']) ? $settings['design']['css_box']['extra']['background']['image'] : array();
+  if (!empty($background_images)) {
+    foreach ($background_images as $image_fid) {
+      $file = file_load($image_fid);
+      if ($file) {
+        $file->status = FILE_STATUS_PERMANENT;
+        $file->save();
+        $file_usage = \Drupal::service('file.usage');
+        $file_usage->add($file, 'builder', 'builder', $bid);
+      }
+    }
+  }
+
+  switch ($element['#type']) {
+    case 'image':
+      if (!empty($settings['general']['image'])) {
+        $fids = $settings['general']['image'];
+        foreach ($fids as $fid) {
+          $file = file_load($fid);
+          if ($file) {
+            $file->status = FILE_STATUS_PERMANENT;
+            $file->save();
+            $file_usage = \Drupal::service('file.usage');
+            $file_usage->add($file, 'builder', 'builder', $bid);
+          }
+
+        }
+      }
+      break;
+    case 'google_map':
+      if (!empty($settings['general']['marker'])) {
+        $fids = $settings['general']['marker'];
+        foreach ($fids as $fid) {
+          $file = file_load($fid);
+          if ($file) {
+            $file->status = FILE_STATUS_PERMANENT;
+            $file->save();
+            $file_usage = \Drupal::service('file.usage');
+            $file_usage->add($file, 'builder', 'builder', $bid);
+          }
+
+        }
+      }
+      break;
+
+    case 'text':
+      // filter textarea if has image and update the file usage
+      $text = $settings['general']['text']['value'];
+      $result = new FilterProcessResult($text);
+
+      if (stristr($text, 'data-entity-type="file"') !== FALSE) {
+        $dom = Html::load($text);
+        $xpath = new \DOMXPath($dom);
+        $processed_uuids = array();
+        foreach ($xpath->query('//*[@data-entity-type="file" and @data-entity-uuid]') as $node) {
+          $uuid = $node->getAttribute('data-entity-uuid');
+          // Only process the first occurrence of each file UUID.
+          if (!isset($processed_uuids[$uuid])) {
+            $processed_uuids[$uuid] = TRUE;
+
+            $file = \Drupal::entityManager()->loadEntityByUuid('file', $uuid);
+            if ($file) {
+              $result->addCacheTags($file->getCacheTags());
+
+              $file->status = FILE_STATUS_PERMANENT;
+              $file->save();
+              $file_usage = \Drupal::service('file.usage');
+              $file_usage->add($file, 'builder', 'builder', $bid);
+
+            }
+          }
+        }
+      }
+
+      break;
+  }
+
+}
+
+/**
+ * Implements of hook_builder_element_delete($bid, $delta, $element)
+ */
+
+function builder_builder_element_delete($bid, $delta, $element) {
+
+
+}
+
+/**
+ * Hook_builder_element_export_alter(&$zip , &$element)
+ */
+function builder_builder_element_export_alter(&$zip, &$element) {
+
+
+  $files = array();
+  $j = 1;
+  if ($element['#module'] == 'builder' && $element['#delta'] == 'image' && $element['#type'] == 'image') {
+    $settings = isset($element['#settings']) ? $element['#settings'] : NULL;
+    if (!empty($settings['general']['image'])) {
+      foreach ($settings['general']['image'] as $k => $fid) {
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+          if ($name = $zip->getNameIndex($i)) {
+            $files[] = $name;
+          }
+        }
+        if ($file = File::load($fid)) {
+          $filename = $file->getFilename();
+          if (!empty($files) && in_array($filename, $files)) {
+            $unique = uniqid();
+            $filename = $j . '_' . $unique . '_' . $filename;
+            $j++;
+            $files[] = $filename;
+          }
+          $zip->addFile(drupal_realpath($file->getFileUri()), $filename);
+          $element['#settings']['general']['image'][$k] = $filename; // add file name location callback for settings data in settings.txt (zip file).
+        }
+      }
+
+    }
+  }
+  if ($element['#module'] == 'builder' && $element['#delta'] == 'google_map' && $element['#type'] == 'google_map') {
+    $settings = isset($element['#settings']) ? $element['#settings'] : NULL;
+    if (!empty($settings['general']['marker'])) {
+      foreach ($settings['general']['marker'] as $k => $fid) {
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+          if ($name = $zip->getNameIndex($i)) {
+            $files[] = $name;
+          }
+        }
+        if ($file = File::load($fid)) {
+          $filename = $file->getFilename();
+          if (!empty($files) && in_array($filename, $files)) {
+            $unique = uniqid();
+            $filename = $j . '_' . $unique . '_' . $filename;
+            $j++;
+            $files[] = $filename;
+          }
+          $zip->addFile(drupal_realpath($file->getFileUri()), $filename);
+          $element['#settings']['general']['marker'][$k] = $filename; // add file name location callback for settings data in settings.txt (zip file).
+        }
+      }
+
+    }
+  }
+
+  if ($element['#module'] == 'builder' && $element['#delta'] == 'text' && $element['#type'] == 'text') {
+    $settings = isset($element['#settings']) ? $element['#settings'] : NULL;
+    $text = $settings['general']['text']['value'];
+    if (stristr($text, 'data-entity-type="file"') !== FALSE) {
+      $dom = new \DOMDocument();
+      // Ignore warnings during HTML soup loading.
+      @$dom->loadHTML($text, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+      $xpath = new \DOMXPath($dom);
+      foreach ($xpath->query('//*[@data-entity-type="file" and @data-entity-uuid]') as $node) {
+        $uuid = $node->getAttribute('data-entity-uuid');
+        $file = \Drupal::entityManager()->loadEntityByUuid('file', $uuid);
+        if ($file) {
+          $filename = $file->getFilename();
+          $node->setAttribute('data-image-name', $filename);
+          if (!empty($files) && in_array($filename, $files)) {
+            $unique = uniqid();
+            $filename = $j . '_' . $unique . '_' . $filename;
+            $j++;
+            $files[] = $filename;
+          }
+          $zip->addFile(drupal_realpath($file->getFileUri()), $filename);
+          $element['#settings']['general']['text']['value'] = $dom->saveHTML(); // add file name location callback for settings data in settings.txt (zip file).
+
+        }
+
+      }
+    }
+
+  }
+
+
+}
+
+
+/**
+ * Hook_builder_element_import_alter(&$files , &$element)
+ */
+function builder_builder_element_import_alter(&$files, &$element) {
+
+
+  if ($element['#module'] == 'builder' && $element['#delta'] == 'image' && $element['#type'] == 'image') {
+    $settings = isset($element['#settings']) ? $element['#settings'] : NULL;
+    if (!empty($settings['general']['image'])) {
+      foreach ($settings['general']['image'] as $k => $filename) {
+        if (!empty($filename) && !empty($files[$filename])) {
+          $element['#settings']['general']['image'][$k] = $files[$filename];
+        }
+
+      }
+    }
+  }
+
+  if ($element['#module'] == 'builder' && $element['#delta'] == 'google_map' && $element['#type'] == 'google_map') {
+    $settings = isset($element['#settings']) ? $element['#settings'] : NULL;
+    if (!empty($settings['general']['marker'])) {
+      foreach ($settings['general']['marker'] as $k => $filename) {
+        if (!empty($filename) && !empty($files[$filename])) {
+          $element['#settings']['general']['marker'][$k] = $files[$filename];
+        }
+
+      }
+    }
+  }
+
+  if ($element['#module'] == 'builder' && $element['#delta'] == 'text' && $element['#type'] == 'text') {
+    $settings = isset($element['#settings']) ? $element['#settings'] : NULL;
+    $text = $settings['general']['text']['value'];
+    if (stristr($text, 'data-entity-type="file"') !== FALSE) {
+      $dom = new \DOMDocument();
+      // Ignore warnings during HTML soup loading.
+      @$dom->loadHTML($text, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+      $xpath = new \DOMXPath($dom);
+
+      foreach ($xpath->query('//*[@data-entity-type="file" and @data-entity-uuid]') as $node) {
+        $filename = $node->getAttribute('data-image-name');
+        if (!empty($filename) && !empty($files[$filename])) {
+          $file_url = file_create_url('public://' . $filename);
+          $node->setAttribute('src', $file_url);
+        }
+        $element['#settings']['general']['text']['value'] = $dom->saveHTML();
+
+      }
+    }
+
+  }
+
+
+}
+
+
+/**
+ * @param $path
+ * @return string
+ */
+
+function builder_url($path) {
+  global $base_url;
+  $colonpos = strpos($path, ':');
+  if (!$colonpos) {
+    $path = $base_url . '/' . ltrim($path, '/');
+  }
+
+  return $path;
+}
+
+
+/**
+ * Implements of hook_builder_element_action_links($type, $element)
+ */
+
+function builder_builder_element_action_links($delta, $element) {
+
+  $type = $element['#type'];
+  $bid = $element['#bid'];
+  $links = array();
+  $modal = !empty($element['#modal']) ? $element['#modal'] : 'modal';
+  if ($type == 'text') {
+    $modal = 'dialog';
+  }
+  if ($modal !== 'dialog' && $modal !== 'modal') {
+    $modal = 'modal';
+  }
+  $action_links = array(
+    'add' => array(
+      '#type' => 'link',
+      '#title' => '',
+      '#url' => Url::fromRoute('builder.element_controller_index', array(
+        'bid' => $bid,
+        'parent' => $element['#id']
+      )),
+      '#attributes' => array(
+        'class' => array('use-ajax', 'icon-plus'),
+        'data-dialog-type' => $modal,
+        'data-dialog-options' => BuilderBase::modalDialogOptions(),
+        'title' => t('Add element to @title', array('@title' => $element['#delta']))->render(),
+      ),
+    ),
+    'edit' => array(
+      '#type' => 'link',
+      '#title' => '',
+      '#url' => Url::fromRoute('builder.element_controller_edit', array(
+        'bid' => $bid,
+        'id' => $element['#id']
+      )),
+      '#attributes' => array(
+        'class' => array('use-ajax', 'icon-edit'),
+        'data-dialog-type' => $modal,
+        'data-dialog-options' => BuilderBase::modalDialogOptions(),
+        'title' => t('Edit @title', array('@title' => $element['#delta']))->render(),
+      ),
+    ),
+    'delete' => array(
+      '#type' => 'link',
+      '#title' => '',
+      '#url' => Url::fromRoute('builder.element_controller_delete', array(
+        'bid' => $bid,
+        'id' => $element['#id']
+      )),
+      '#attributes' => array(
+        'class' => array('use-ajax', 'icon-trash'),
+        'title' => t('Delete @title', array('@title' => $element['#delta']))->render(),
+      ),
+    ),
+    'duplicate' => array(
+      '#type' => 'link',
+      '#title' => '',
+      '#url' => Url::fromRoute('builder.element_controller_duplicate', array(
+        'bid' => $bid,
+        'id' => $element['#id']
+      )),
+      '#attributes' => array(
+        'class' => array('use-ajax', 'icon-docs'),
+        'title' => t('Clone @title', array('@title' => $element['#delta']))->render(),
+        // 'data-dialog-type' => 'modal', // dialog
+        //'data-dialog-options' => BuilderBase::modalDialogOptions(),
+      ),
+    ),
+  );
+  switch ($type) {
+
+    case 'row':
+
+      $links = array('duplicate', 'delete', 'edit', 'add');
+
+      break;
+
+    case 'column':
+
+      $links = array('duplicate', 'delete', 'edit', 'add');
+
+      break;
+
+    case 'text':
+      $links = array('duplicate', 'delete', 'edit');
+      break;
+
+    case 'image':
+      $links = array('duplicate', 'delete', 'edit');
+      break;
+    case 'node':
+      $links = array('duplicate', 'delete', 'edit');
+      break;
+    case 'block':
+      $links = array('duplicate', 'delete', 'edit');
+      break;
+    case 'youtube':
+      $links = array('duplicate', 'delete', 'edit');
+      break;
+    case 'vimeo':
+      $links = array('duplicate', 'delete', 'edit');
+      break;
+
+    case 'contact_form':
+      $links = array('duplicate', 'delete', 'edit');
+      break;
+    case 'google_map':
+      $links = array('duplicate', 'delete', 'edit');
+      break;
+    case 'embed_views':
+      $links = array('duplicate', 'delete', 'edit');
+      break;
+
+  }
+
+  $links_allows = array();
+
+  if (!empty($links)) {
+    foreach ($links as $link) {
+      if (isset($action_links[$link])) {
+        $links_allows[$link] = $action_links[$link];
+      }
+    }
+  }
+  $build = array(
+    '#theme' => 'item_list',
+    '#attributes' => array('class' => array('builder-element-action-links')),
+    '#items' => $links_allows,
+    '#title' => NULL,
+    '#list_type' => 'ul',
+  );
+
+  $output = render($build);
+  return $output;
+}
+
+
+/**
+ * Implements hook_theme().
+ */
+function builder_theme() {
+  return [
+    'builder_ui' => [
+      'variables' => [
+        'attributes' => [],
+        'bid' => '',
+      ],
+    ],
+    'builder' => [
+      'variables' => [
+        'attributes' => [],
+        'bid' => '',
+      ],
+    ],
+    'builder_element' => [
+      'render element' => 'element',
+    ],
+    'css_box_wrapper' => array(
+      'render element' => 'element',
+    ),
+    'builder_ui_elements' => [
+      'variables' => [
+        'elements' => [],
+        'bid' => NULL,
+        'parent' => NULL,
+      ],
+    ],
+    'builder_element_design' => [
+      'variables' => [
+        'element' => NULL,
+      ],
+    ],
+    'horizontal_tabs_wrapper' => array(
+      'render element' => 'element',
+    ),
+  ];
+}
+
+
+/**
+ * Themeable for builder_ui_elements
+ */
+
+function template_preprocess_builder_ui_elements(&$variables) {
+  $elements = $variables['elements'];
+  $bid = $variables['bid'];
+  $parent = $variables['parent'];
+
+  $links = array();
+  foreach ($elements as $element) {
+    $type = $element['#type'];
+    $delta = $element['#delta'];
+    $modal = !empty($element['#modal']) ? $element['#modal'] : 'modal';
+    if ($type == 'text') {
+      $modal = 'dialog';// we need this to fix issue for image and link from ckeditor. (this can be fixed in the future drupal core updates)
+    }
+    $links[] = array(
+      '#type' => 'link',
+      '#title' => t($element['#info'])->render(),
+      '#url' => Url::fromRoute('builder.element_controller_add', array(
+        'bid' => $bid,
+        'parent' => $parent,
+        'delta' => $delta
+      )),
+      '#attributes' => array(
+        'class' => array('use-ajax'),
+        'data-dialog-type' => $modal,
+        'data-dialog-options' => BuilderBase::modalDialogOptions(),
+      ),
+    );
+
+  }
+
+
+  $build = array(
+    '#theme' => 'item_list',
+    '#items' => $links,
+    '#title' => NULL,
+    '#list_type' => 'ul',
+    '#attached' => array(
+      'library' => array(
+        'builder/builder-ui',
+        'builder/builder-vertical-tabs',
+        'builder/builder.drupal.dialog'
+      ),
+    ),
+
+
+  );
+
+  $output = render($build);
+
+  $variables['output'] = $output;
+
+
+}
+
+
+/**
+ * themeable for element "margin_padding"
+ */
+function template_preprocess_css_box_wrapper(&$variables) {
+
+  $element = $variables['element'];
+  $variables['aria_description'] = FALSE;
+  // Add element class and id for screen readers.
+  if (isset($variables['attributes']['aria-describedby'])) {
+    $variables['aria_description'] = TRUE;
+    $variables['attributes']['id'] = $variables['attributes']['aria-describedby'];
+    // Remove aria-describedby attribute as it shouldn't be visible here.
+    unset($variables['attributes']['aria-describedby']);
+  }
+
+  $variables['margin'] = $element['margin'];
+  $variables['border'] = $element['border'];
+  $variables['padding'] = $element['padding'];
+  $variables['extra'] = $element['extra'];
+  $variables['builder_element_content'] = t('Element')->render();
+}
+
+/**
+ * Themeable for horizontal_tabs
+ * @param $variables
+ */
+function template_preprocess_horizontal_tabs_wrapper(&$variables) {
+  $element = $variables['element'];
+  $variables['children'] = (!empty($element['#children'])) ? $element['#children'] : '';
+  $variables['attributes']['class'][] = 'tab-content';
+}
+
+
+/**
+ * Themeable for builder
+ */
+
+function template_preprocess_builder(&$variables) {
+
+
+  $bid = $variables['bid'];
+
+
+  $build = _builder_render($bid);
+
+  $variables['builder'] = $build;
+  $attached = array(
+    '#attached' => array(
+      'library' => array(
+        'builder/builder',
+      ),
+    ),
+  );
+
+  $stored_css = builder_add_css_inline();
+
+  if (!empty($stored_css)) {
+    foreach ($stored_css as $key => $data) {
+      if (!empty($data)) {
+        $data = str_replace("\r", "", $data);
+        $data = str_replace("\n", "", $data);
+        $attached['#attached']['html_head'][] = [
+          [
+            '#type' => 'html_tag',
+            '#tag' => 'style',
+            '#value' => $data,
+            '#attributes' => [
+              'type' => 'text/css',
+              'media' => 'all',
+            ],
+            '#weight' => CSS_THEME,
+          ],
+          // A key, to make it possible to recognize this HTML <HEAD> element when altering.
+          $key,
+        ];
+      }
+
+    }
+  }
+
+  $variables['attached'] = render($attached);
+  $variables['css_class'] = 'builder builder-' . str_replace('_', '-', $bid);
+  $variables['css_id'] = 'builder-' . $bid;
+
+
+}
+
+/**
+ * themeable THEME_block_builder_element_design()
+ */
+
+function theme_builder_element_design($variables) {
+  $element = $variables['element'];
+
+  $design = array(
+    'attributes' => array(),
+    'css' => '',
+  );
+  $css = '';
+  $attributes = array('id' => $element['#id']);
+
+
+  if (isset($element['#settings']['general'])) {
+    $general = $element['#settings']['general'];
+    if (!empty($general['attributes']['id'])) {
+      $attributes['id'] = $general['attributes']['id'];
+    }
+    if (!empty($general['attributes']['class'])) {
+      $attributes['class'] = array($general['attributes']['class']);
+    }
+  }
+  if (isset($element['#settings']['design'])) {
+    $css_box = $element['#settings']['design']['css_box'];
+    foreach ($css_box as $key => $arr) {
+      switch ($key) {
+        case 'margin':
+          $css .= builder_element_css_box_get_css($key, $arr);
+          break;
+        case 'padding':
+          $css .= builder_element_css_box_get_css($key, $arr);
+          break;
+        case 'border':
+          $css .= builder_element_css_box_get_css($key, $arr, $css_box);
+          break;
+        case 'extra':
+          $css .= builder_element_css_box_get_css_extra($arr);
+          break;
+      }
+    }
+
+  }
+
+  if (!empty($css)) {
+    $css = ".builder #" . $attributes['id'] . "{ $css }";
+  }
+  $design['css'] = $css;
+  $design['attributes'] = $attributes;
+  return $design;
+}
+
+function builder_element_css_box_get_css($key, $arr, $css_box = array()) {
+  $css = '';
+  foreach ($arr as $k => $v) {
+    if (!empty($v) && $v !== '') {
+      if ($key == 'border') {
+        $css .= $key . "-$k-width: " . builder_element_css_check_value($v) . ";\n";
+        if (!empty($css_box['extra']['border']['style']) && $css_box['extra']['border']['style'] !== 'none' && !empty($css_box['extra']['border']['color_enabled'])) {
+          $css .= $key . "-$k-style: " . $css_box['extra']['border']['style'] . ";\n";
+        }
+      }
+      else {
+        $css .= $key . "-$k: " . builder_element_css_check_value($v) . ";\n";
+      }
+
+    }
+  }
+
+
+  return $css;
+}
+
+function builder_element_css_box_get_css_extra($arr) {
+  $css = '';
+
+
+  if (!empty($arr['border']['color_enabled']) && !empty($arr['border']['color'])) {
+    $border_color = $arr['border']['color'];
+    $css .= "border-color: $border_color; \n";
+  }
+  if (!empty($arr['border']['style'])) {
+
+    $border_style = $arr['border']['style'];
+    if ($border_style == 'none') {
+      foreach ($arr as $k => $v) {
+        if ($v == 'border') {
+          if ($v == '') {
+            $css .= "border-$k-style: none; \n";
+          }
+        }
+      }
+
+    }
+    else {
+      //$css .= "border-style: $border_style; \n";
+    }
+
+  }
+
+  if (!empty($arr['css'])) {
+    $css .= $arr['css'];
+  }
+  if (!empty($arr['background']['color_enabled']) && !empty($arr['background']['color'])) {
+    $rgb = $arr['background']['color'];
+    $css .= "background-color: $rgb; \n";
+  }
+  if (!empty($arr['background']['image'][0])) {
+    $file = File::load($arr['background']['image'][0]);
+    if ($file) {
+
+      $uri = $file->getFileUri();
+      $url = file_create_url($uri);
+      $real_url = file_url_transform_relative($url);
+
+      $css .= "background-image: url('$real_url'); \n";
+    }
+
+  }
+  if (!empty($arr['background']['repeat'])) {
+    $repeat = $arr['background']['repeat'];
+    $css .= "background-repeat: $repeat; \n";
+  }
+  return $css;
+}
+
+function builder_element_css_check_value($value) {
+
+  if (strpos($value, 'px') !== FALSE || strpos($value, 'em') !== FALSE) {
+    return $value;
+  }
+  return $value . 'px';
+
+}
+
+
+/**
+ * Render elements for builder
+ */
+function _builder_render($bid) {
+  $render = array();
+
+  $elements = BuilderBase::getData($bid);
+
+  if (!empty($elements)) {
+    $render = BuilderBase::getRenderTree($bid, $elements);
+  }
+  // allow other modules hook_builder_render_alter($render, $bid)
+  \Drupal::moduleHandler()->alter('builder_render', $render, $bid);
+
+  return $render;
+
+}
+
+
+/**
+ *  Theme able for builder_ui($variables)
+ */
+
+function template_preprocess_builder_ui(&$variables) {
+
+  $bid = $variables['bid'];
+
+  $builder = new BuilderBase($bid);
+
+  $builder_output = $builder->render();
+
+  $variables['builder'] = $builder_output;
+  $variables['css_class'] = 'builder-ui builder-ui-' . str_replace('_', '-', $bid);
+  $variables['css_id'] = 'builder-ui-' . $bid;
+  $variables['bid'] = $bid;
+
+  $action_links = array();
+
+  $links = array();
+
+  $elements = $builder->getElements();
+
+  $links[] = array(
+    '#type' => 'link',
+    '#title' => t('Import'),
+    '#url' => Url::fromRoute('builder.tool_controller_import', array('bid' => $bid)),
+    '#attributes' => array(
+      'class' => array('use-ajax', 'icon-upload-cloud'),
+      'data-dialog-type' => 'modal',
+      'data-dialog-options' => BuilderBase::modalDialogOptions(),
+      'title' => t('Import builder')
+    ),
+  );
+  if (!empty($elements)) {
+    $links[] = array(
+      '#type' => 'link',
+      '#title' => t('Export'),
+      '#url' => Url::fromRoute('builder.tool_controller_export', array('bid' => $bid)),
+      '#attributes' => array(
+        'class' => array('icon-export'),
+        'title' => t('Export builder')
+      ),
+    );
+  }
+
+
+  $links[] = array(
+    '#type' => 'link',
+    '#title' => t('Add row'),
+    '#url' => Url::fromRoute('builder.element_controller_add', array(
+      'bid' => $bid,
+      'parent' => 0,
+      'delta' => 'row'
+    )),
+    '#attributes' => array(
+      'class' => array('use-ajax', 'icon-plus'),
+      'data-dialog-type' => 'modal',
+      'data-dialog-options' => BuilderBase::modalDialogOptions(),
+      'title' => t('Insert new row to builder')
+    ),
+  );
+
+  $build = array(
+    '#theme' => 'item_list',
+    '#items' => $links,
+    '#title' => NULL,
+    '#list_type' => 'ul',
+    '#attached' => array(
+      'library' => array(
+        'builder/builder-ui',
+        'builder/builder-vertical-tabs',
+        'builder/builder.drupal.dialog'
+      ),
+    ),
+
+
+  );
+
+  $variables['links'] = render($build);
+
+}
+
+
+/**
+ * Themeable for builder_element($variables)
+ */
+
+function template_preprocess_builder_element(&$variables) {
+
+  $element = $variables['element'];
+
+
+  $module = $element['#module'];
+  $delta = $element['#delta'];
+
+  if (!empty($element['#bid'])) {
+    $links = \Drupal::moduleHandler()
+      ->invoke($module, 'builder_element_action_links', array(
+        $delta,
+        $element
+      ));
+  }
+
+
+  $element_attributes = !empty($element['#settings']['general']['attributes']) ? $element['#settings']['general']['attributes'] : array();
+
+  if (!empty($element['#settings']['general']['#type'])) {
+    $element_attributes['class'] .= ' ' . $element['#settings']['type'];
+  }
+
+  $element_attributes['id'] = !empty($element_attributes['id']) ? $element_attributes['id'] : $element['#id'];
+  $variables ['has_parent'] = FALSE;
+  // Ensure #attributes is set.
+  $element += array('#attributes' => $element_attributes);
+
+  if ($element['#editing']) {
+    $element['#attributes']['data-type'] = $element['#type'];
+    $element['#attributes']['data-id'] = $element['#id'];
+  }
+
+
+  // Special handling for form elements.
+  if (isset($element ['#array_parents'])) {
+    $variables ['has_parent'] = TRUE;
+  }
+  $variables['children'] = $element['#children'];
+  $variables['attributes'] = $element['#attributes'];
+  $variables['links'] = !empty($links) ? $links : '';
+  $variables['delta'] = $element['#delta'];
+  $inner_class = 'builder-element-inner';
+
+  $variables['children_wrapper_class'] = 'builder-element-children-wrapper';
+  if (empty($element['#bid']) && $element['#type'] == 'row') {
+    if (!empty($variables['attributes']['class'])) {
+      $classes = $variables['attributes']['class'];
+      foreach ($classes as $k => $v) {
+        if ($v == 'row') {
+          unset($classes[$k]);
+        }
+      }
+      $variables['attributes']['class'] = $classes;
+    }
+
+    $variables['children_wrapper_class'] .= ' row';
+
+    $inner_class .= ' container-fluid';
+  }
+
+
+  if (!empty($element['#settings']['general']['inner_class'])) {
+    $inner_class .= ' ' . $element['#settings']['general']['inner_class'];
+  }
+  $variables['inner_class_css'] = $inner_class;
+
+  if (!empty($element_attributes['data-animation'])) {
+    $variables['attributes']['data-animation'] = $element_attributes['data-animation'];
+    $variables['attributes']['class'][] = 'builder-element-animation';
+  }
+
+}
+
+/**
+ * Implements hook_library_info_alter().
+ */
+function builder_library_info_alter(&$libraries, $extension) {
+  if ($extension == 'core' && isset($libraries['drupal.vertical-tabs'])) {
+    unset($libraries['drupal.vertical-tabs']['css']['component']['misc/vertical-tabs.css']);
+    $libraries['drupal.vertical-tabs']['dependencies'][] = 'builder/builder-vertical-tabs';
+  }
+  if ($extension == 'core' && isset($libraries['jquery.ui'])) {
+    unset($libraries['jquery.ui']['css']['theme']['assets/vendor/jquery.ui/themes/base/theme.css']);
+    $libraries['jquery.ui']['dependencies'][] = 'builder/builder.jquery.ui';
+  }
+  if ($extension == 'core' && isset($libraries['drupal.dialog'])) {
+    unset($libraries['drupal.dialog']['css']['theme']['misc/dialog.theme.css']);
+    $libraries['drupal.dialog']['dependencies'][] = 'builder/builder.drupal.dialog';
+  }
+}
+
+/**
+ *Implement of hook_page_bottom
+ */
+function builder_page_bottom(array &$page_bottom) {
+  $stored_js = builder_add_js_inline();
+  if (!empty($stored_js)) {
+    foreach ($stored_js as $key => $data) {
+      $page_bottom[$key] = [
+        [
+          '#type' => 'html_tag',
+          '#tag' => 'script',
+          '#value' => $data,
+          '#attributes' => [
+            'type' => 'text/javascript',
+          ],
+          '#weight' => JS_THEME,
+        ],
+        // A key, to make it possible to recognize this HTML <HEAD> element when altering.
+        $key,
+      ];
+    }
+  }
+}
+
+/**
+ * Add inline css
+ */
+function builder_add_css_inline($data = NULL, $key = NULL) {
+  $stored_css = &drupal_static(__FUNCTION__, array());
+
+  if (isset($data) && isset($key)) {
+    if (!empty($stored_css[$key])) {
+      $stored_css[$key] = $stored_css[$key] . "\n $data";
+    }
+    else {
+      $stored_css[$key] = $data;
+    }
+
+  }
+
+  return $stored_css;
+}
+
+/**
+ * Add inline javascript
+ */
+function builder_add_js_inline($data = NULL, $key = NULL) {
+  $stored_js = &drupal_static(__FUNCTION__, array());
+  if (isset($data) && isset($key)) {
+    $stored_js[$key] = $data;
+  }
+  return $stored_js;
+}
+
+/**
+ * validation for node element configure form
+ */
+
+function _builder_element_node_validate(array &$form, FormStateInterface $form_state) {
+  $values = $form_state->getValues();
+
+  if (empty($values['settings']['general']['node'])) {
+    $form_state->setErrorByName('settings][general][node', t('Node is require.')->render());
+  }
+  else {
+    $bid = $values['bid'];
+    $entity_id = Database::getConnection()->select('builder_data', 'b')
+      ->fields('b', array('entity_id'))
+      ->condition('b.bid', $bid)
+      ->execute()
+      ->fetchField();
+    $nid = $values['settings']['general']['node'];
+    if ($entity_id == $nid) {
+      $form_state->setErrorByName('settings][general][node', t('Can not add same node to current node.')->render());
+    }
+
+  }
+
+
+}
+
+/** validation for youtube element configure form
+ * @param array $form
+ * @param FormStateInterface $form_state
+ */
+function builder_youtube_video_validate(array &$form, FormStateInterface $form_state) {
+
+  $values = $form_state->getValues();
+  $url = !empty($values['settings']['general']['youtube_url']) ? $values['settings']['general']['youtube_url'] : '';
+
+  if (!builder_is_youtube($url)) {
+    $form_state->setErrorByName('settings][general][youtube_url', t('Please enter correct Youtube video URL.'));
+  }
+}
+
+function builder_vimeo_validate(array &$form, FormStateInterface $form_state) {
+
+  $values = $form_state->getValues();
+  $url = !empty($values['settings']['general']['vimeo_url']) ? $values['settings']['general']['vimeo_url'] : '';
+
+  if (!builder_is_vimeo($url)) {
+    $form_state->setErrorByName('settings][general][vimeo_url', t('Please enter correct vimeo URL.'));
+  }
+}
+
+function builder_is_youtube($url) {
+  return (preg_match('/youtu\.be/i', $url) || preg_match('/youtube\.com\/watch/i', $url));
+}
+
+function builder_is_vimeo($url) {
+  return (preg_match('/vimeo\.com/i', $url));
+}
+
+function builder_youtube_video_id($url) {
+  if (builder_is_youtube($url)) {
+    $pattern = '/^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#\&\?]*).*/';
+    preg_match($pattern, $url, $matches);
+    if (count($matches) && strlen($matches[7]) == 11) {
+      return $matches[7];
+    }
+  }
+
+  return FALSE;
+}
+
+function builder_vimeo_video_id($url) {
+  if (builder_is_vimeo($url)) {
+    $pattern = '/\/\/(www\.)?vimeo.com\/(\d+)($|\/)/';
+    preg_match($pattern, $url, $matches);
+    if (count($matches)) {
+      return $matches[2];
+    }
+  }
+
+  return FALSE;
+}
+
+/**
+ * @param $entity_type
+ * @return array of views modes for entity types.
+ */
+function builder_get_entity_view_modes($entity_type = 'node') {
+  $view_modes = array();
+  $entity_info = \Drupal::entityManager()->getViewModes($entity_type);
+  if (!empty($entity_info)) {
+    foreach ($entity_info as $k => $v) {
+
+      $view_modes[$k] = $v['label'];
+    }
+  }
+
+  return $view_modes;
+}
+
+/**
+ * Create bid
+ */
+function _builder_create_bid() {
+
+  $user = \Drupal::currentUser();
+
+  $fields = array(
+    'uid' => $user->id(),
+    'created' => REQUEST_TIME,
+    'status' => 0
+  );
+  $bid = Database::getConnection()->insert('builder_data')
+    ->fields($fields)
+    ->execute();
+
+  return $bid;
+}
+
+/**
+ * Check builder id
+ */
+
+function _builder_check_bid($bid, $langcode = '') {
+  $query = db_select('builder_data', 'b')
+    ->fields('b', array('entity_id'))
+    ->condition('b.bid', $bid);
+  if ($langcode) {
+    $query = $query->condition('langcode', $langcode);
+  }
+  $entity_id = $query->execute()
+    ->fetchField();
+  return $entity_id;
+}
+
+function _builder_check($bid, $entity = NULL) {
+  $query = db_select('builder_data', 'b')
+    ->fields('b', array('entity_id'))
+    ->condition('b.bid', $bid);
+  if (isset($entity) && method_exists($entity, 'getRevisionId') && $vid = $entity->getRevisionId()) {
+    $query = $query->condition('b.revision_id', $vid);
+  }
+  $entity_id = $query->execute()
+    ->fetchField();
+  return $entity_id;
+}
+
+
+function _builder_check_revision_id($bid, $entity) {
+  $query = db_select('builder_data', 'b')
+    ->fields('b', array('revision_id'))
+    ->condition('b.bid', $bid);
+  if (isset($entity) && $vid = $entity->getRevisionId()) {
+    $query = $query->condition('b.revision_id', $vid);
+  }
+  $entity_id = $query->execute()
+    ->fetchField();
+  return $entity_id;
+}
+
+/**
+ * Delete builder by ID
+ */
+
+function _builder_delete($bid) {
+  $elements = _builder_get_data($bid);
+  if (!empty($elements)) {
+    foreach ($elements as $element) {
+      //Allow other modules implements by HOOK_builder_element_delete($bid, $delta, $element)
+      \Drupal::moduleHandler()
+        ->invoke($element['#module'], 'builder_element_delete', array(
+          $bid,
+          $element['#delta'],
+          $element
+        ));
+    }
+  }
+  $fids = db_select('file_usage', 'f')
+    ->fields('f', array('fid'))
+    ->condition('f.type', 'builder')
+    ->condition('f.id', $bid)
+    ->execute()
+    ->fetchCol();
+
+  if (!empty($fids)) {
+    file_delete_multiple($fids);
+  }
+  Database::getConnection()
+    ->delete('builder_data')
+    ->condition('bid', $bid)
+    ->execute(); // delete builder from builder_data table.
+}
+
+/**
+ * save builder data with fields array
+ */
+
+function _builder_save_data($bid, $fields = array(), $revision_id = NULL) {
+
+  $query = db_update('builder_data')
+    ->fields($fields)
+    ->condition('bid', $bid);
+  if ($revision_id) {
+    $query = $query->condition('revision_id', $revision_id);
+  }
+  $query->execute();
+
+}
+
+/**
+ * Get buidler data from bid
+ */
+
+function _builder_get_data($bid) {
+
+
+  $data = db_select('builder_data', 'b')
+    ->fields('b', array('data'))
+    ->condition('b.bid', $bid)
+    ->execute()
+    ->fetchField();
+
+  if (!empty($data)) {
+    $data = @unserialize($data);
+    return $data;
+  }
+  return $data;
+}
+
+function _builder_extract_directory($create = TRUE) {
+  $directory = &drupal_static(__FUNCTION__, '');
+  if (empty($directory)) {
+    $directory = 'public://builder_' . uniqid();
+    if ($create && !file_exists($directory)) {
+      drupal_mkdir($directory, '777');
+    }
+  }
+  return $directory;
+}
+
+/**
+ * extract files for import slider
+ */
+function builder_tools_extract_archive($file, $directory) {
+  $archiver = archiver_get_archiver($file);
+  if (!$archiver) {
+    throw new Exception(t('Cannot extract %file, not a valid archive.', array('%file' => $file)));
+  }
+  $files = $archiver->listContents();
+  $files_allows = array();
+  foreach ($files as $file) {
+    if (!_builder_file_is_dammaged($file)) {
+      $files_allows[] = $file;
+    }
+  }
+  $extract_location = $directory;
+  if (file_exists($extract_location)) {
+    file_unmanaged_delete_recursive($extract_location);
+  }
+  $archiver->extract($directory, $files_allows);
+  return $archiver;
+}
+
+
+/** check if file is dammage
+ * @param $filename
+ * @return true or false
+ */
+function _builder_file_is_dammaged($filename) {
+  $dammaged = FALSE;
+  $extensions = 'php inc module';
+  $regex = '/\.(' . preg_replace('/ +/', '|', preg_quote($extensions)) . ')$/i';
+  if (preg_match($regex, $filename)) {
+    $dammaged = TRUE;
+  }
+  return $dammaged;
+}
+
+
+/**
+ * get list of views for embed views element
+ */
+function _builder_get_views() {
+  $options = array();
+
+  if (\Drupal::moduleHandler()->moduleExists('views')) {
+
+    $query = \Drupal::entityQuery('view')
+      ->condition('status', TRUE)
+      ->execute();
+
+    $views = \Drupal::entityManager()->getStorage('view')->loadMultiple($query);
+
+    if (!empty($views)) {
+      foreach ($views as $view_name => $view) {
+        $displays = $view->get('display');
+        if (!empty($displays)) {
+          foreach ($displays as $display_id => $display) {
+            $options[$view_name][$view_name . '**' . $display_id] = $display['display_title'] . '(' . $display_id . ')';
+          }
+        }
+      }
+    }
+
+  }
+  return $options;
+}
+
+/**
+ * List of animations
+ */
+
+function _builder_animate_options() {
+  $op['attention_seekers'] = array(
+    "bounce",
+    "flash",
+    "pulse",
+    "rubberBand",
+    "shake",
+    "headShake",
+    "swing",
+    "tada",
+    "wobble",
+    "jello"
+  );
+  $op['bouncing_entrances'] = array(
+    "bounceIn",
+    "bounceInDown",
+    "bounceInLeft",
+    "bounceInRight",
+    "bounceInUp"
+  );
+  $op['bouncing_exits'] = array(
+    "bounceOut",
+    "bounceOutDown",
+    "bounceOutLeft",
+    "bounceOutRight",
+    "bounceOutUp"
+  );
+
+  $op['fading_entrances'] = array(
+    "fadeIn",
+    "fadeInDown",
+    "fadeInDownBig",
+    "fadeInLeft",
+    "fadeInLeftBig",
+    "fadeInRight",
+    "fadeInRightBig",
+    "fadeInUp",
+    "fadeInUpBig"
+  );
+  $op['fading_exits'] = array(
+    "fadeOut",
+    "fadeOutDown",
+    "fadeOutDownBig",
+    "fadeOutLeft",
+    "fadeOutLeftBig",
+    "fadeOutRight",
+    "fadeOutRightBig",
+    "fadeOutUp",
+    "fadeOutUpBig"
+  );
+  $op['flippers'] = array(
+    "flip",
+    "flipInX",
+    "flipInY",
+    "flipOutX",
+    "flipOutY"
+  );
+  $op['lightspeed'] = array(
+    "lightSpeedIn",
+    "lightSpeedOut"
+  );
+  $op['rotating_entrances'] = array(
+    "rotateIn",
+    "rotateInDownLeft",
+    "rotateInDownRight",
+    "rotateInUpLeft",
+    "rotateInUpRight"
+  );
+  $op['rotating_exits'] = array(
+    "rotateOut",
+    "rotateOutDownLeft",
+    "rotateOutDownRight",
+    "rotateOutUpLeft",
+    "rotateOutUpRight"
+  );
+  $op['specials'] = array(
+    "hinge",
+    "rollIn",
+    "rollOut"
+  );
+
+  $op['zooming_entrances'] = array(
+    "zoomIn",
+    "zoomInDown",
+    "zoomInLeft",
+    "zoomInRight",
+    "zoomInUp"
+  );
+
+  $op['zooming_exits'] = array(
+    "zoomOut",
+    "zoomOutDown",
+    "zoomOutLeft",
+    "zoomOutRight",
+    "zoomOutUp"
+  );
+  $op['sliding_entrances'] = array(
+    "slideInDown",
+    "slideInLeft",
+    "slideInRight",
+    "slideInUp"
+  );
+  $op['sliding_exits'] = array(
+    "slideOutDown",
+    "slideOutLeft",
+    "slideOutRight",
+    "slideOutUp"
+  );
+  $options = array('' => t('None'));
+  foreach ($op as $k => $v) {
+    $options[$k] = array();
+    if (!empty($v)) {
+      foreach ($v as $v1) {
+        $options[$k][$v1] = $v1;
+      }
+    }
+  }
+  return $options;
+}
+
+
+/**
+ * Implement of hook_entity_insert()
+ */
+function builder_entity_insert(Drupal\Core\Entity\EntityInterface $entity) {
+
+  $user = \Drupal::currentUser();
+  \Drupal\Core\Cache\Cache::invalidateTags(array(
+    'views',
+    'views_data',
+    'user:' . $user->id()
+  ));
+}
+
+/**
+ * Implement of hook_entity_update()
+ */
+
+function builder_entity_update(Drupal\Core\Entity\EntityInterface $entity) {
+
+  $user = \Drupal::currentUser();
+  \Drupal\Core\Cache\Cache::invalidateTags(array(
+    'views',
+    'views_data',
+    'user:' . $user->id()
+  ));
+
+}

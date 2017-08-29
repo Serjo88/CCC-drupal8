@@ -1,0 +1,27 @@
+{# define variables for this template #}
+{% set webinar_subtitle = content.field_subtitle %}
+{% set webinar_date = content.field_webinar_date %}
+{% set webinar_body = content.body %}
+{% set webinar_image = content.field_image %}
+{% set video_url = content.field_video_url %}
+{% set video_toggle = node.field_toggle_video %}
+
+
+<div{{ attributes }}>
+	{# make sure contextual links are rendered #}
+	{{ title_prefix }}
+	{{ webinar_subtitle }}
+	{{ title_suffix }}
+	<div class="webinar">
+		{# check if the video toggle is on #}
+		{% if video_toggle.value == '1' %}
+			{# render video content instead of normal content #}
+			<iframe width="100%" height="400" src="https://www.youtube.com/embed/{{ video_url[0] }}" frameborder="0" allowfullscreen></iframe>
+		{% else %}
+			{# render the normal content - video will not display #}
+			<h3>{{ webinar_date }}</h3>
+			{{ webinar_body }}
+			{{ webinar_image }}
+		{% endif %}
+	</div>
+</div>

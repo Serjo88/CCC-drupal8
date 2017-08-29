@@ -1,0 +1,131 @@
+@import "vars/_theme_variables";
+
+@import "mixins/mixins";
+@import "mixins/template";
+@import "rtl/rtl"; 
+
+.swiper-wrapper{
+  background: #ccc;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+  &:before{
+    content: "";
+    @include size(65px, 65px);
+    @include border-radius(50%);
+    background: url(#{$base-theme-image-path}/preloader/preloader-10.gif) no-repeat rgba(255, 255, 255, 0.3);
+    text-align: center;
+    margin-top: -30px;
+    margin-left: -30px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 9;
+  }
+  &.slick-initialized{
+    max-height: 999px!important;
+    background: none;
+    &:before{
+      display: none!important;
+    }
+  }
+}
+
+
+.block-quicktabs{
+    position: relative;
+    ul.quicktabs-tabs{
+      padding: 0;
+      border: none;
+      background: none!important;
+      display: inline-block;
+      float: right;
+      position: absolute;
+      right: 0;
+      top: 8px;
+      z-index: 99;
+      > li{
+        background: none;
+        padding: 0;
+        margin: 0;
+        border: 0;
+        position: relative;
+        > a{
+          font-size: 14px;
+          text-transform: none;
+          font-family: $font-family-base;
+          font-weight: 700;
+          padding: 0;
+          padding-right: 20px;
+          @media(max-width: $screen-xs-max){
+            padding-right: 10px;
+          }
+        }
+        &:last-child{
+          > a{
+            padding-right: 0;
+          }
+        }
+        &.ui-tabs-active{
+           > a{
+            color: $theme-color;
+           }
+        }
+      }
+    }
+    .quicktabs-main{
+      border: none;
+      padding: 0;
+      @include border-radius(0);
+      .ui-tabs-panel{
+        padding: 0!important;
+      }
+    }
+    .block{
+      margin-bottom: 0!important;
+   }
+}
+
+.gva-mega-menu{
+   .block.block-quicktabs{
+      ul.quicktabs-tabs{
+         width: 15%;
+         float: left!important;
+         position: relative!important;
+         > li{
+            background: none;
+            padding: 0;
+            margin: 0;
+            position: relative;
+            width: 100%;
+            float: left;
+            clear: both;
+            padding-right: 20px;
+            > a{
+               font-size: 12px;
+               text-transform: uppercase;
+               font-family: $font-family-base;
+               border-bottom: 1px solid $border-color;
+               font-weight: 700;
+               padding-bottom: 10px;
+               margin-bottom: 10px;
+               width: 100%;
+            }
+            &:last-child{
+               > a{
+                  padding-right: 0;
+               }
+            }
+            &.ui-tabs-active{
+              > a{
+               color: $theme-color;
+              }
+            }
+         }
+      }
+      .quicktabs-main{
+         float: left!important;
+         width: 85%;
+      }
+   }
+}

@@ -1,0 +1,27 @@
+.builder-element-type-block .contextual{
+    display: none;
+}
+.builder-ui-element-link .item-list ul{
+    list-style: none;
+}
+.builder-video-wrapper.builder-video-responsive {
+    position: relative;
+    padding-bottom: 56.25%; /* 16:9 */
+    padding-top: 25px;
+    height: 0;
+}
+
+.builder-video-wrapper.builder-video-responsive iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.builder-element-type-image img, .builder-element img {
+    max-width: 100%;
+}
+.builder-google-map{
+    min-height: 200px;
+}

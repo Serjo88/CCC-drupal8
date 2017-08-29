@@ -1,0 +1,80 @@
+global-styling:
+  version: VERSION
+  header: true
+  css:
+    theme:
+      css/customize.css: {}
+      css/font-awesome.css: {}
+      vendor/owl-carousel/assets/owl.carousel.min.css: {}
+      vendor/owl-carousel/assets/owl.theme.default.min.css: {}
+      //fonts.googleapis.com/css?family=Roboto:400,500,700,900: { type: external }
+      //fonts.googleapis.com/css?family=Montserrat:400,700: { type: external }
+  js:
+    js/bootstrap.js: {}
+    js/imagesloader.min.js: {}
+    js/jquery.cookie.js: {}
+    vendor/jquery.easing.js: {}
+    vendor/jquery.appear.js: {}
+    vendor/count-to.js: {}
+    vendor/owl-carousel/owl.carousel.min.js: {}
+    vendor/waypoint.js: {}
+    vendor/jpreloader.min.js: {}
+    vendor/masonry.pkgd.min.js: {}
+    vendor/isotope.pkgd.min.js: {}
+    js/theme.plugins.js: {}
+    js/expandinglists.js: {}
+    js/popup.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/drupalSettings
+
+monte.skin.default:
+  css:
+    theme: 
+      css/customize.css: {}
+      css/template.css: {}
+      css/bootstrap.css: {}
+
+monte.skin.green:
+  css:
+    theme: 
+      css/skins/green/template.css: {}
+      css/skins/green/bootstrap.css: {}
+
+monte.skin.lilac:
+  css:
+    theme: 
+      css/skins/lilac/template.css: {}
+      css/skins/lilac/bootstrap.css: {}
+
+monte.skin.orange:
+  css:
+    theme: 
+      css/skins/orange/template.css: {}
+      css/skins/orange/bootstrap.css: {}
+
+monte.skin.red:
+  css:
+    theme: 
+      css/skins/red/template.css: {}
+      css/skins/red/bootstrap.css: {}
+
+monte.skin.yellow:
+  css:
+    theme: 
+      css/skins/yellow/template.css: {}
+      css/skins/yellow/bootstrap.css: {}
+
+gavias-monte-admin:
+  version: VERSION
+  css: 
+    theme: 
+      css/theme-settings.css: {}
+
+maintenance_page:
+  version: VERSION
+  css:
+    theme:
+      css/maintenance-page.css: {}
+

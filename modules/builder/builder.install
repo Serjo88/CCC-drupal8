@@ -1,0 +1,97 @@
+<?php
+
+use Drupal\Core\Database\Database;
+
+/**
+ * Implements of hook_schema()
+ */
+
+function builder_schema() {
+  $schema['builder_data'] = array(
+    'description' => 'Store builder data for builder Field.',
+    'fields' => array(
+      'bid' => array(
+        'description' => 'builder ID',
+        'type' => 'serial',
+        'not null' => TRUE,
+      ),
+      'uid' => array(
+        'description' => 'User ID',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'entity_id' => array(
+        'description' => 'The entity ID using this builder row.',
+        'type' => 'int',
+        'not null' => FALSE,
+      ),
+      'revision_id' => array(
+        'description' => 'Entity revision ID',
+        'type' => 'int',
+        'not null' => FALSE,
+      ),
+      'langcode' => array(
+        'description' => 'Langcode',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => FALSE,
+      ),
+      'type' => array(
+        'description' => 'The entity type.',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => FALSE,
+      ),
+      'data' => array(
+        'description' => 'Data of each row',
+        'type' => 'blob',
+        'size' => 'big',
+        'not null' => FALSE,
+      ),
+      'status' => array(
+        'description' => 'Row status',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'created' => array(
+        'description' => 'Unix timestamp',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array('bid'),
+  );
+
+
+  return $schema;
+
+}
+
+/**
+ * Updates revision ID field to builder_data
+ */
+function builder_update_8001() {
+  $field = array(
+    'description' => 'Entity revision ID',
+    'type' => 'int',
+    'not null' => FALSE,
+  );
+  $schema = Database::getConnection()->schema();
+  $schema->addField('builder_data', 'revision_id', $field);
+}
+
+/**
+ * Updates langcode field to builder_data
+ */
+function builder_update_8002() {
+  $field = array(
+    'description' => 'Langcode',
+    'type' => 'varchar',
+    'length' => '255',
+    'not null' => FALSE,
+  );
+  $schema = Database::getConnection()->schema();
+  $schema->addField('builder_data', 'langcode', $field);
+}

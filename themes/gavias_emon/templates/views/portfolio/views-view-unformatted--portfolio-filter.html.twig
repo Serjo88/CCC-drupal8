@@ -1,0 +1,11 @@
+<div class="text-center clearfix">
+     <nav class="portfolio-filter">
+      <ul class="nav nav-tabs">
+         <li><a class="active" href="#" data-filter="*"><span>All</span></a></li>
+        {% for row in rows %}
+            {{ row.content }}
+         {% endfor %}
+      </ul>                    
+   </nav> 
+</div> 
+

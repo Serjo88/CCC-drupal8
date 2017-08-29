@@ -1,0 +1,85 @@
+langcode: en
+status: true
+dependencies: {  }
+id: tabs_posts_menu
+label: 'Tabs posts menu'
+renderer: quick_tabs
+options:
+  accordion_tabs:
+    jquery_ui:
+      collapsible: 0
+      heightStyle: auto
+  quick_tabs:
+    ajax: '0'
+hide_empty_tabs: 0
+default_tab: '9999'
+configuration_data:
+  -
+    title: Fashion
+    weight: '0'
+    type: view_content
+    content:
+      block_content:
+        options:
+          bid: 'blocktabs_block:tabs_posts_menu'
+          block_title: ''
+          display_title: 0
+      node_content:
+        options:
+          nid: ''
+          view_mode: full
+          hide_title: '1'
+      view_content:
+        options:
+          vid: posts_menu
+          display: block_1
+          args: ''
+      qtabs_content:
+        options:
+          machine_name: ''
+  -
+    title: Food
+    weight: '0'
+    type: view_content
+    content:
+      block_content:
+        options:
+          bid: 'blocktabs_block:tabs_posts_menu'
+          block_title: ''
+          display_title: 0
+      node_content:
+        options:
+          nid: ''
+          view_mode: full
+          hide_title: '1'
+      view_content:
+        options:
+          vid: posts_menu
+          display: block_2
+          args: ''
+      qtabs_content:
+        options:
+          machine_name: ''
+  -
+    title: 'Life Style'
+    weight: '0'
+    type: view_content
+    content:
+      block_content:
+        options:
+          bid: 'blocktabs_block:tabs_posts_menu'
+          block_title: ''
+          display_title: 0
+      node_content:
+        options:
+          nid: ''
+          view_mode: full
+          hide_title: '1'
+      view_content:
+        options:
+          vid: posts_menu
+          display: block_3
+          args: ''
+      qtabs_content:
+        options:
+          machine_name: ''

@@ -1,0 +1,90 @@
+.builder-margin-wrapper {
+    border: 1px dashed #bababa;
+    margin: 1px;
+    position: relative;
+}
+
+.builder-margin-wrapper .form-item.form-type-textfield {
+    margin: 0;
+    padding: 0;
+}
+
+.builder-margin-wrapper input {
+    border: 1px solid #bdbdbd;
+    font-size: 11px;
+    height: 24px;
+    line-height: 11px;
+    margin: 0;
+    padding: 3px 0;
+    position: absolute;
+    text-align: center;
+    width: 34px;
+}
+
+.builder-margin-wrapper label {
+    color: #2c2c2c;
+    font-size: 9px;
+    left: 5px;
+    line-height: 9px;
+    margin: 0;
+    padding: 0;
+    position: absolute;
+    top: 6px;
+    font-weight: normal;
+}
+
+.builder-margin-wrapper .builder-top {
+    left: 50%;
+    margin-left: -17px;
+    top: 11px;
+}
+
+.builder-margin-wrapper .builder-right {
+    margin-top: -12px;
+    right: 5px;
+    top: 50%;
+}
+
+.builder-margin-wrapper .builder-bottom {
+    bottom: 11px;
+    left: 50%;
+    margin-left: -17px;
+}
+
+.builder-margin-wrapper .builder-left {
+    left: 5px;
+    margin-top: -12px;
+    top: 50%;
+}
+
+.builder-border-wrapper {
+    border: 1px solid #ccc;
+    margin: 44px;
+    position: relative;
+    background-color: #f2f2f2;
+}
+
+.builder-padding-wrapper {
+    border: 1px solid #bababa;
+    margin: 44px;
+    position: relative;
+    background-color: #e7e7e7;
+}
+
+.builder-css-box-content {
+    border: 1px solid #bababa;
+    box-sizing: border-box;
+    font-size: 10px;
+    height: 50px;
+    line-height: 11px;
+    padding: 0;
+    text-align: center;
+    margin: 44px;
+    padding: 15px;
+}
+
+.builder-css-box-content span {
+    display: block;
+    font-weight: bold;
+    vertical-align: middle;
+}

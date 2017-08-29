@@ -1,0 +1,963 @@
+/************************************
+
+**  Gavias Slider **
+
+************************************/
+
+.gavias-slider {
+    min-height: 0px !important;
+}
+
+/************************************
+
+**  Hubspot Form CSS **
+
+************************************/
+
+.gavias-slider .hbspt-form .hs_email  {
+  float:left;
+}
+
+.hbspt-form .hs-button {
+  margin:5px 0;
+  padding:5px 10px;
+  font-weight:bold;
+  border:none;
+  text-transform: uppercase;
+  font-size: 12px !important;
+  letter-spacing: 1px;
+  font-family: "Montserrat";
+  font-weight: 400;
+  background: #FF9900;
+  color: #FFFFFF;
+  -webkit-transition: all 0.35s;
+  -o-transition: all 0.35s;
+  transition: all 0.35s;
+  -moz-transition: all 0.35s;
+  -ms-transition: all 0.35s;
+	  border-radius: 5px;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  -ms-border-radius: 5px;
+  -o-border-radius: 5px;
+  -webkit-box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2);
+  box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2);
+}
+
+.gavias-slider .hbspt-form .hs-button {
+  padding:11px 21px;
+  border-radius: 0px;
+  -webkit-border-radius: 0px;
+  -moz-border-radius: 0px;
+  -ms-border-radius: 0px;
+  -o-border-radius: 0px;
+  -webkit-box-shadow: none;
+  box-shadow: none;
+  margin-left:-15px;
+}
+
+.gavias-slider .hbspt-form .hs_email label {
+	display:none;
+}
+
+.hbspt-form .hs-button:hover, .hbspt-form .hs-button:focus, .hbspt-form .hs-button:active {
+  color: #000000 !important;  -webkit-transition: all 0.35s;
+  -o-transition: all 0.35s;
+  transition: all 0.35s;
+  -moz-transition: all 0.35s;
+  -ms-transition: all 0.35s;
+}
+
+.hbspt-form input {
+  padding:0;
+  margin:5px 0;
+}
+.hbspt-form input:focus {
+    color: #000000;
+}
+
+.hbspt-form form input[type="radio"] {
+    margin-right:5px;
+}
+/************************************
+
+**  Image Styles **
+
+************************************/
+
+.node--view-mode-full .field--name-field-image img {
+	float:right;
+	padding:10px;
+}
+
+/************************************
+
+**  Forms **
+
+************************************/
+
+form input[type="text"],
+form input[type="password"],
+form input[type="email"],
+form input[type="url"],
+form input[type="date"],
+form input[type="month"],
+form input[type="time"],
+form input[type="datetime"],
+form input[type="datetime-local"],
+form input[type="week"],
+form input[type="number"],
+form input[type="search"],
+form input[type="tel"],
+form input[type="color"],
+form select,
+form textarea {
+    padding: 0.5em 0.6em;
+    display: inline-block;
+    border: 1px solid #ccc;
+    box-shadow: inset 0 1px 3px #ddd;
+    border-radius: 4px;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+	max-width:90%;
+}
+
+form input:not([type]) {
+    padding: 0.5em 0.6em;
+    display: inline-block;
+    border: 1px solid #ccc;
+    box-shadow: inset 0 1px 3px #ddd;
+    border-radius: 4px;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+form input[type="text"]:focus,
+form input[type="password"]:focus,
+form input[type="email"]:focus,
+form input[type="url"]:focus,
+form input[type="date"]:focus,
+form input[type="month"]:focus,
+form input[type="time"]:focus,
+form input[type="datetime"]:focus,
+form input[type="datetime-local"]:focus,
+form input[type="week"]:focus,
+form input[type="number"]:focus,
+form input[type="search"]:focus,
+form input[type="tel"]:focus,
+form input[type="color"]:focus,
+form select:focus,
+form textarea:focus {
+    outline: 0;
+    outline: thin dotted \9; /* IE6-9 */
+    border-color: #666666;
+}
+
+form input:not([type]):focus {
+    outline: 0;
+    outline: thin dotted \9; /* IE6-9 */
+    border-color: #77b145;
+}
+
+form input[type="file"]:focus,
+form input[type="radio"]:focus,
+form input[type="checkbox"]:focus {
+    outline: thin dotted #333;
+    outline: 1px auto #666666;
+}
+form .pure-checkbox,
+form .pure-radio {
+    margin: 0.5em 0;
+    display: block;
+}
+
+form input[type="text"][disabled],
+form input[type="password"][disabled],
+form input[type="email"][disabled],
+form input[type="url"][disabled],
+form input[type="date"][disabled],
+form input[type="month"][disabled],
+form input[type="time"][disabled],
+form input[type="datetime"][disabled],
+form input[type="datetime-local"][disabled],
+form input[type="week"][disabled],
+form input[type="number"][disabled],
+form input[type="search"][disabled],
+form input[type="tel"][disabled],
+form input[type="color"][disabled],
+form select[disabled],
+form textarea[disabled] {
+    cursor: not-allowed;
+    background-color: #eaeded;
+    color: #cad2d3;
+	clear:both;
+}
+
+/*
+Need to separate out the :not() selector from the rest of the CSS 2.1 selectors
+since IE8 won't execute CSS that contains a CSS3 selector.
+*/
+form input:not([type])[disabled] {
+    cursor: not-allowed;
+    background-color: #eaeded;
+    color: #cad2d3;
+}
+form input[readonly],
+form select[readonly],
+form textarea[readonly] {
+    background: #eee; /* menu hover bg color */
+    color: #777; /* menu text color */
+    border-color: #ccc;
+}
+
+form input:focus:invalid,
+form textarea:focus:invalid,
+form select:focus:invalid {
+    color: #b94a48;
+    border-color: #ee5f5b;
+}
+form input:focus:invalid:focus,
+form textarea:focus:invalid:focus,
+form select:focus:invalid:focus {
+    border-color: #e9322d;
+}
+form input[type="file"]:focus:invalid:focus,
+form input[type="radio"]:focus:invalid:focus,
+form input[type="checkbox"]:focus:invalid:focus {
+    outline-color: #e9322d;
+}
+form select {
+    border: 1px solid #ccc;
+    background-color: white;
+}
+form select[multiple] {
+    height: auto;
+}
+form label {
+    margin: 0.5em 0 0.2em;
+}
+form fieldset {
+	border-color:#eee;
+	padding:10px;
+}
+form legend {
+    display: block;
+    width: 100%;
+    padding: 0.3em 0;
+    margin-bottom: 0.3em;
+    color: #333;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+
+.webform-button--submit,
+.form-submit {
+ 	display: inline-block;
+    *display: inline; /*IE 6/7*/
+    zoom: 1;
+    line-height: normal;
+    white-space: nowrap;
+    vertical-align: baseline;
+    text-align: center;
+    cursor: pointer;
+    -webkit-user-drag: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* Firefox: Get rid of the inner focus border */
+.webform-button--submit,
+.form-submit::-moz-focus-inner {
+    padding: 0;
+    border: 0;
+}
+
+
+/************************************
+
+**  Menus **
+
+************************************/
+
+li.menu-item--active-trail a {
+    color:orange !important;
+}
+
+li.menu-item--active-trail li a {
+    color:black !important;
+}
+
+.content-main ul {
+	margin:5px 0 5px 0;
+}
+
+.content-main ul li  {
+	list-style-type: disc;
+	margin-left:20px;
+}
+
+.main-content {
+	margin:5px 0 15px 0;
+}
+
+.content-top ul {
+	margin:0;
+}
+
+.content-top ul li {
+	list-style-type: none;
+}
+ul.menu {
+  margin: 0;
+  padding: 0;
+}
+
+.hs-error-msgs li,
+ul.menu li {
+  list-style: none;
+}
+
+form.webform-submission-form label,
+form.webform-submission-form input {
+	float:none;
+	clear:both;
+	display:block;
+}
+
+form.webform-submission-form .form-submit,
+form.webform-submission-form .webform-button--submit {
+	margin:5px 0;
+}
+
+/************************************
+
+**  Image Styles **
+
+************************************/
+
+.field--name-field-subtitle {
+	font-size:1.2em;
+	color:#666666;
+}
+
+
+.field--name-field-banner {
+	margin-bottom:10px;
+}
+
+/************************************
+
+**  Expanding Lists **
+
+************************************/
+
+.expanded-list-items {
+
+}
+
+.expanded-list-items.single ul li {
+   background-color: #DDDDDD !important;
+   padding: 4px 4px 6px 12px;
+   color: #000000 !important;
+   margin-bottom: 6px;
+   border-radius: 4px;
+	list-style:none;
+	margin-left:0px;
+}
+
+.expanded-list-items.single ul li ul li {
+	background-color: #FFFFFF !important;
+	color:#000000 !important;
+}
+
+.expanded-list-items.single .list-item-detail {
+   background-color: #fff !important;
+	color:#000000 !important;
+   padding: 8px;
+   margin: 0 -4px -4px -12px;
+}
+
+.expanded-list-items ul li {
+   cursor: pointer;
+}
+
+.list-item-detail {
+   display: none;
+}
+
+
+
+/************************************
+
+**  Sidebars **
+
+************************************/
+
+.sidebar .gva-navigation {
+	background:none;
+}
+
+.sidebar div.item a,
+.sidebar div.more-link a {
+    display:block;
+    border:1px solid #EEEEEE;
+    background: #FFFFFF;
+    padding:5px 10px;
+    margin:5px;
+}
+
+.sidebar div.item a:hover,
+.sidebar div.more-link a:hover {
+    background: #EEEEEE;
+    color:orange;
+    font-weight: bold;
+}
+
+.sidebar div.more-link a {
+    float:right;
+}
+
+.sidebar .block-content {
+    overflow: hidden;
+}
+
+
+/************************************
+
+**  Text and Headers **
+
+************************************/
+
+h1 {
+	font-size:1.3em;
+}
+
+h2 {
+	font-size:1.15em;
+}
+h3 {
+	font-size:1em;
+}
+
+h4 {
+	font-size:0.9em;
+}
+
+h5 {
+	font-size:0.9em;
+	font-weight:normal;
+}
+
+p {
+	margin-bottom:10px;
+}
+
+.block .block-title > span {
+  z-index: 0;
+}
+
+.button-action a:hover {
+	color:#000000 !important;
+}
+
+.block-views-blocksolutions-solutions-block {
+	padding-top:10px;
+}
+.block-views-blocksolutions-solutions-block h2 {
+	display:none;
+}
+
+.block-views-blocksolutions-solutions-block .field--name-field-teaser-title {
+	font-weight:bold;
+}
+
+.block-views-blocksolutions-solutions-block ul li {
+	list-style-type: none;
+	margin-left:0;
+}
+
+#block-gaviasblockbuiderhomepagevideo {
+	margin:none;
+	padding:none;
+}
+
+.content-main a,
+.content-main a h4,
+.content-main a h5 {
+	color:#FF9900 !important;
+}
+
+.content-main a:hover {
+	color:#FFC000 !important;
+}
+
+.readmore a {
+	color:#FFFFFF !important;
+}
+
+
+a.feed-icon {
+	display:block;
+	float:none;
+	clear:both;
+	padding:10px 15px;
+	background:#666666;
+	text-align:center;
+	max-width:250px;
+	margin:15px auto !important;
+}
+
+/************************************
+
+**  Testimonials **
+
+************************************/
+
+#block-views-block-testimonials-block-2 img {
+	float:right;
+	padding-left:10px;
+	clip-path: circle(40px at center);
+}
+
+#block-views-block-testimonials-block-2 .views-col {
+	padding:10px;
+}
+
+#block-views-block-testimonials-block-2 {
+	padding-top:10px;
+}
+
+.testimonial-author,
+.testimonial-author-title {
+	font-weight:bold;
+}
+
+/************************************
+
+**  Block Builder **
+
+************************************/
+
+.gavias-blockbuilder-content p,
+.gavias-blockbuilder-content ul {
+	margin:5px 0;
+}
+
+.gsc-video-link {
+	padding-top:20px;;
+}
+
+.extra-vertical-space {
+	padding:15px 0;
+}
+
+/************************************
+
+**  After Content **
+
+************************************/
+
+.after_content .block {
+    padding-bottom:0px;
+    margin-bottom:0px;
+}
+
+
+/************************************
+
+**  TAGS **
+
+************************************/
+
+.field--name-field-tags {
+	margin-top:10px;
+}
+
+.field--name-field-tags .field__label {
+	font-weight:bold;
+}
+
+.field--name-field-tags .field__item {
+	float:left;
+	padding-right:10px;
+}
+
+
+/************************************
+
+**  Header **
+
+************************************/
+
+header.header-v3 .topbar {
+  background-color: #666666 !important;
+  color: #fff !important;
+}
+
+header.header-v3 .topbar .block {
+	margin:0 !important;
+	padding:0 !important;
+}
+
+.gva-navigation li.hidden-menu {
+        display: none;
+    }
+
+.gva-navigation li.menu-item.start-here a {
+    color:#FFFFFF !important;
+    background:orange;
+    padding-top:10px !important;
+    padding-bottom:10px !important;
+    font-weight:500 !important;
+}
+
+.gva-navigation li.menu-item.start-here a:hover {
+    color:#000000 !important;    
+}
+
+.do-not-call-cta {
+    float:left;
+    padding:5px 0;
+    margin:0;
+}
+
+.small-menu {
+	float:right;
+	margin:0;
+	padding:5px 0;
+}
+
+.topbar .block-title {
+	display:none !important;
+}
+
+.small-menu li {
+	display:inline-block !important;
+	list-style:none !important;
+	float:left !important;
+	margin:0 !important;
+}
+
+.small-menu li + li:before {
+    content: "|" !important;
+	margin: 0 5px;
+}
+
+.header-main,
+.main-menu ul {
+	background:#EEEEEE !important;
+}
+
+.search-content {
+	z-index:100;
+}
+
+.breadcrumbs {
+    padding-top:10px;
+}
+
+div.breadcrumbs {
+    margin-bottom:0;
+}
+
+#block-breadcrumbs {
+    margin-bottom:0px;
+}
+
+/************************************
+
+**  Popup **
+
+************************************/
+
+header.header-v3 .topbar .hbspt-form .hs_email,
+header.header-v3 .topbar .hbspt-form .hs_submit {
+	display:block;
+}
+
+
+/*   This is the Popup Window   */
+.delayedPopupWindow {
+	top:calc(50% - 150px);
+	left:calc(50% - 130px);
+	margin:0 auto;
+	padding:20px;
+	display: none;
+	background:#666666;
+	width:300px;
+	height:260px;
+	position: fixed;
+	z-index:100;
+	clear:both;
+	-webkit-box-shadow: 0px 0px 33px 0px rgba(0,0,0,0.75);
+-moz-box-shadow: 0px 0px 33px 0px rgba(0,0,0,0.75);
+box-shadow: 0px 0px 33px 0px rgba(0,0,0,0.75);
+	
+}
+/*   This is the closing button  */
+header.header-v3 .topbar a#btnClose {
+	text-decoration: none;
+	color: #EEEEEE;
+	padding:10px;
+	float:right;
+	clear:both;
+}
+/*   This is the closing button hover state  */
+header.header-v3 .topbar a#btnClose:hover {
+	color: orange;
+}
+
+/************************************
+
+**  Footer **
+
+************************************/
+
+
+.footer .block-title {
+	margin:0;
+	padding:0;
+}
+
+.footer .item {
+	margin:5px 0;
+}
+
+.footer ul.gva_menu li {
+	margin:0 !important;
+	padding:0 !important;
+	float:none !important;
+	clear:both !important;
+}
+
+/************************************
+
+**  DNC Typer **
+
+************************************/
+.dnc-typer {
+    color:#000000;
+    text-align:center;
+}
+
+
+/************************************
+
+**  Block Builder **
+
+************************************/
+
+.gavias-metro-box .flipper .back {
+    background-color:#EEEEEE !important;
+    background:#EEEEEE !important;
+    color:#000000 !important;
+    width:100% !important;
+    text-align:left !important;
+}
+
+.gavias-metro-box .flipper .back h3 a {
+  color:#000000 !important;
+  text-align:center !important;
+}
+
+.gavias-metro-box .flipper .back ul {
+    margin:10px;
+}
+
+.gavias-metro-box .flipper .back p {
+  color:#000000 !important;
+    text-align:left !important;
+}
+
+.gavias-metro-box .flipper .back h3 {
+    padding-top:10px;
+    padding-bottom:10px;
+    text-align:center !important;
+}
+
+
+.plan-price {
+    display:none;
+}
+
+/************************************
+
+**  Webinars **
+
+************************************/
+
+#block-views-block-webinars-block-1 div.more-link a {
+    display:block;
+    border:1px solid #EEEEEE;
+    background: #FFFFFF;
+    padding:5px 10px;
+    margin:5px auto;
+   text-align:center;
+    width:100px;
+}
+
+#block-views-block-webinars-block-1 div.more-link a:hover {
+    background: #EEEEEE;
+    color:orange;
+    font-weight: bold;
+}
+
+/************************************
+
+**  FAQ **
+
+************************************/
+ul.faq {
+    margin:0;
+    padding:10px 0 0 0;
+    list-style:none !important;
+    text-align:center;
+}
+
+ul.faq li {
+    margin:0;
+    padding:0;
+    display: inline-block;
+}
+
+ul.faq li a {
+    margin:15px 5px;
+    padding:10px;
+    background:#FFFFFF !important;
+    color:#000000 !important;
+    border:1px solid #CCCCCC;
+}
+
+ul.faq li a:hover {
+    background:orange !important;
+    color:#000000 !important;
+}
+
+/************************************
+
+**  Social Media Links **
+
+************************************/
+
+.footer-social ul li a:hover i,
+.footer-social ul li a:hover i.fa-facebook-square,
+.footer-social ul li a:hover i.fa-twitter-square,
+.footer-social ul li a:hover i.fa-linkedin-square,
+.footer-social ul li a:hover i.fa-youtube-square {
+  color: #6b6b6b !important;
+}
+
+.footer-social ul li a i.fa-facebook-square {
+  color: #3b5998 !important;
+}
+.footer-social ul li a i.fa-twitter-square {
+  color: #4099ff !important;
+}
+.footer-social ul li a i.fa-linkedin-square {
+  color: #0e76a8 !important;
+}
+.footer-social ul li a i.fa-youtube-square {
+  color: #c4302b !important;
+}
+
+
+/************************************
+
+**  Back to Top **
+
+************************************/
+
+#back-to-top {
+    position: fixed; 
+    bottom: 100px; 
+    right: 35px; 
+    z-index: 9999; 
+    color: #444; 
+    cursor: pointer; 
+    border: 0; 
+    font-size:40px; 
+    transition: opacity 0.2s ease-out; 
+    opacity: 0;
+}
+#back-to-top:hover {
+    color:orange; 
+}
+#back-to-top.show { 
+    opacity: 1;
+}
+
+
+/************************************
+
+**  Mobile CTA **
+
+************************************/
+.mobile_cta {
+    display:none;
+}
+
+.mobile_cta p,
+div#block-mobilephonecta {
+    margin-bottom:0 !important;
+    padding-bottom:5px !important;
+    text-align:center;
+    clear:both;
+    float:none;
+    font-size:18px;
+    padding-top:5px;
+}
+
+.content-top div.block {
+    margin-bottom:0 !important;
+    padding-bottom:0 !important;
+}
+
+/************************************
+
+**  Mobile Styles **
+
+************************************/
+
+@media screen and (max-width: 768px) {
+    #back-to-top.show {
+        opacity:0;
+    }
+    
+   .gva-navigation li.hidden-menu {
+        display: inline;
+    }
+    
+    .navigation .gva_menu > li.hidden-menu > a {
+        text-transform: capitalize !important;
+    }
+    .navigation .gva_menu > li.hidden-menu > a:before {
+        content:"\003e " !important;
+        height: 8px !important;
+        width: 8px !important;
+        position: inherit !important;
+        opacity: 1;
+        filter: alpha(opacity=1);
+        display: inline !important;
+    }
+    
+    .gavias-slider,
+    #back-to-top,
+    header.header-v3 .topbar {
+        display:none;
+    }
+    
+    .mobile_cta {
+        display:block;
+        border-bottom:1px solid #CCC;
+    }
+    
+    #block-gaviasblockbuiderwhatwedo .bb-inner:first-child {
+        padding-top:0px !important;
+        margin-top:0px !important;
+    }
+
+}

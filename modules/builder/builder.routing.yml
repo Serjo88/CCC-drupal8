@@ -1,0 +1,67 @@
+
+builder.element_controller_index:
+  path: '/builder/add/{bid}/{parent}'
+  defaults:
+    _controller: '\Drupal\builder\Controller\ElementController::index'
+    _title: 'Select element'
+  options:
+    _admin_route: TRUE
+  requirements:
+    _permission: 'use builder'
+builder.element_controller_add:
+  path: '/builder/add/{bid}/{parent}/{delta}'
+  defaults:
+    _controller: '\Drupal\builder\Controller\ElementController::add'
+    _title_callback: '\Drupal\builder\Controller\ElementController::getTitle'
+  options:
+    _admin_route: TRUE
+  requirements:
+    _permission: 'use builder'
+builder.element_controller_edit:
+  path: '/builder/edit/{bid}/{id}'
+  defaults:
+    _controller: '\Drupal\builder\Controller\ElementController::edit'
+    _title_callback: '\Drupal\builder\Controller\ElementController::getEditTitle'
+  requirements:
+    _permission: 'use builder'
+builder.element_controller_delete:
+  path: '/builder/delete/{bid}/{id}'
+  defaults:
+    _controller: '\Drupal\builder\Controller\ElementController::delete'
+    _title_callback: '\Drupal\builder\Controller\ElementController::getDeleteTitle'
+  options:
+    _admin_route: TRUE
+  requirements:
+    _permission: 'use builder'
+builder.element_controller_duplicate:
+  path: '/builder/clone/{bid}/{id}'
+  defaults:
+    _controller: '\Drupal\builder\Controller\ElementController::duplicate'
+    _title: 'Duplicate element'
+  options:
+    _admin_route: TRUE
+  requirements:
+    _permission: 'use builder'
+builder.element_controller_sortable:
+  path: '/builder/sortable/{bid}'
+  defaults:
+    _controller: '\Drupal\builder\Controller\ElementController::sortable'
+    _title: 'Sortable elements'
+  options:
+    _admin_route: TRUE
+  requirements:
+    _permission: 'use builder'
+builder.tool_controller_import:
+  path: '/builder/import/{bid}'
+  defaults:
+    _controller: '\Drupal\builder\Controller\ToolController::import'
+    _title: 'Import'
+  requirements:
+    _permission: 'access content'
+builder.tool_controller_export:
+  path: '/builder/export/{bid}'
+  defaults:
+    _controller: '\Drupal\builder\Controller\ToolController::export'
+    _title: 'Export'
+  requirements:
+    _permission: 'access content'

@@ -1,0 +1,64 @@
+<header id="header" class="header-v2">
+  
+  {% if page.topbar %}
+    <div class="topbar">
+      <div class="topbar-inner">
+        <div class="container">
+          <div class="content">{{ page.topbar }}</div> 
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+   <div class="header-main">
+      <div class="container">
+         <div class="header-main-inner">
+            <div class="row">
+               <div class="col-lg-2 col-md-3 col-sm-12 col-xs-12 block-logo">
+               {% if page.branding %}
+                  {{ page.branding }}
+               {% endif %}
+               </div>
+
+               <div class="col-lg-10 col-md-9 col-sm-12 col-xs-12 header-right">
+                  {% if page.header_right %}
+                     <div class="header-right-inner">
+                        {{ page.header_right }}
+                     </div>
+                   {% endif %}
+               </div>
+            </div>
+         </div>
+      </div>
+   </div>
+
+    {% set class_sticky = '' %}
+    {% if sticky_menu == 1 %}
+      {% set class_sticky = 'gv-sticky-menu' %}
+    {% endif %}  
+
+    <div class="header-bottom {{ class_sticky }}">
+      <div class="main-menu">
+          <div class="container">
+             <div class="row">
+                <div class="col-xs-12 area-main-menu">
+                  <div class="area-inner">
+                    {% if page.main_menu %}
+                      {{ page.main_menu }}
+                    {% endif %}  
+                    {% if page.search %}
+                      <div class="gva-search-region search-region">
+                        <span class="icon"><i class="fa fa-search"></i></span>
+                        <div class="search-content">  
+                          {{ page.search }}
+                        </div>  
+                      </div>
+                    {% endif %}
+                  </div>   
+                </div>
+             </div>
+          </div>
+       </div>
+    </div>  
+
+</header>

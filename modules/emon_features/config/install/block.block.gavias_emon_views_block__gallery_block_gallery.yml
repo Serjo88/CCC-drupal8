@@ -1,0 +1,27 @@
+langcode: en
+status: false
+dependencies:
+  config:
+    - views.view.gallery
+  module:
+    - block_class
+    - views
+  theme:
+    - gavias_emon
+third_party_settings:
+  block_class:
+    classes: ''
+id: gavias_emon_views_block__gallery_block_gallery
+theme: gavias_emon
+region: '-1'
+weight: -19
+provider: null
+plugin: 'views_block:gallery-block_gallery'
+settings:
+  id: 'views_block:gallery-block_gallery'
+  label: ''
+  provider: views
+  label_display: '0'
+  views_label: ''
+  items_per_page: none
+visibility: {  }

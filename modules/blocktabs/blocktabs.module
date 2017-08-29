@@ -1,0 +1,14 @@
+<?php
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function blocktabs_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'entity.blocktabs.collection':
+      return '<p>' . t('Block tabs commonly provide a block which contains several tabs.') . '</p>';
+
+  }
+}

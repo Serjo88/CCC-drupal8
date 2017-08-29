@@ -1,0 +1,59 @@
+
+
+      {{content.field_banner}}
+      {% set display_type = node.field_display_type.value %}
+
+      <div class="expanding-list">
+
+         {% if content.body %}
+            <div class="row">
+               <div class="col-xs-12 expanded-list-before">
+                  {{content.body}}
+               </div>
+            </div>
+         {% endif %}
+
+         <div class="row">
+            {% if display_type == 'twocol' %}
+               <div class="expanded-list-items twocol col-xs-12 col-sm-6 col-md-4 col-lg-3">
+                  <ul class="plain">
+                     {% for key, item in content.field_list_item if key|first != '#' %}
+                        <li id="list-item-{{key}}">{{item}}</li>
+                     {% endfor %}
+                  </ul>
+               </div>
+
+               <div class="expanded-list-details col-xs-12 col-sm-6 col-md-8 col-lg-9">
+                  {% for key, detail in content.field_item_detail if key|first != '#' %}
+                     <div class="list-item-detail" id="list-detail-{{key}}">
+                        {{detail}}
+                     </div>
+                  {% endfor %}
+               </div>
+            {% endif %}
+
+            {% if display_type == 'single' %}
+               <div class="expanded-list-items single col-xs-12">
+                  <ul class="plain">
+                     {% for key, item in content.field_list_item if key|first != '#' %}
+                        <li id="list-item-{{key}}">{{item}}
+                           <div class="list-item-detail" id="list-detail-{{key}}">
+                              {{content.field_item_detail[key]}}
+                           </div>
+                        </li>
+                     {% endfor %}
+                  </ul>
+               </div>
+            {% endif %}
+         </div>
+         
+         {% if content.field_content_after_list %}
+            <div class="row">
+               <div class="col-xs-12 expanded-list-after_list">
+                  {{content.field_content_after_list}}
+               </div>
+            </div>
+         {% endif %}
+      </div>
+
+         

@@ -1,0 +1,1201 @@
+.post-block{
+   background: $white;
+   .post-image {
+      overflow: hidden;
+      a{
+        position: relative;
+        display: block;
+        &:before{
+          background: rgba(0, 0, 0, 0) linear-gradient(to right, rgba(29, 157, 155, 0.6), rgba(66, 165, 246, 0.6)) repeat scroll 0 0;
+          content: "";
+          @include size(100%, 100%);
+          position: absolute;
+          top: 0;
+          left: 0;
+          z-index: 9;
+          @include scale(0);
+          @include transition(all 0.35s);
+        }
+        &:after{
+          content: "\f08e";
+          font-family: "FontAwesome";
+          position: absolute;
+          @include size(40px, 40px);
+          margin-top: -20px;
+          margin-left: -20px;
+          text-align: center;
+          line-height: 40px;
+          font-size: 25px;
+          color: $white;
+          top: 50%;
+          left: 50%; 
+          @include transition(all 0.35s);
+          @include scale(0);
+          z-index: 99;
+        }
+      }
+      img{
+        width: 100%;
+        @include transition(all 0.4s);
+      }
+      &:hover{
+        a:before, a:after{
+          @include scale(1);
+        }
+      }
+    }
+   .post-title{
+      padding: 5px 0;
+      a{
+        display: block;
+        line-height: 22px;
+        font-weight: 600;
+        font-size: 15px;
+        -webkit-hyphens: auto;
+        -moz-hyphens:    auto;
+        -ms-hyphens:     auto;
+        hyphens:         auto;
+        word-wrap: break-word;
+      }
+   }
+   .post-content{
+    @include clearfix();
+   }
+   .post-meta{
+    font-size: 11px;
+    font-weight: 300;
+    color: #A4A4A4;
+    margin-top: 10px;
+    @include clearfix();
+      > div{
+         float: left;
+         display: inline-block;
+         margin-right: 20px;
+         @media(max-width: $screen-sm-max){
+            margin-right: 10px;
+         }
+         &:last-child{
+            margin-right: 0;
+         }
+      }
+      a{
+         color: #A4A4A4;
+         &:hover{
+            text-decoration: underline;
+         }
+      }
+    .post-categories{
+       margin-bottom: 0;
+    }   
+  }
+
+  .post-created{
+    text-transform: none;
+    position: relative;
+  } 
+  .post-description{
+    margin-top: 15px;
+  }
+  .post-comment{
+    text-transform: none;
+    position: relative;
+  }
+
+  .post-categories{
+    position: relative;
+    margin-bottom: 10px;
+    display: inline-block;
+    a{
+      color: $theme-color;
+      display: inline-block;
+      padding: 0;
+      margin-right: 5px;
+      text-transform: uppercase;
+      font-size: 11px;
+      font-family: $font-second;
+      @include transition(all 0.35s);
+      letter-spacing: 1px;
+      line-height: 22px;
+      line-height: 1.5;
+      &:hover{
+        color: lighten($theme-color, 10%);
+        text-decoration: none;
+      }
+    }   
+  }
+  .post-body{
+
+  }
+  .content-after{
+    padding: 10px 0 0;
+  }
+}
+
+
+.video-block{
+  background: $nocolor;
+  position: relative;
+  .post-image a{
+    &:after{
+      @include transition(all 0.35s);
+      content: "";
+      position: absolute;
+      background: rgba(0, 0, 0, 0.3);
+      @include size(100%, 100%);
+      top: 0;
+      left: 0;
+      z-index: 9;
+    }
+    &:before{
+      @include transition(all 0.35s);
+      content: "\f01d";
+      color: $theme-color;
+      font-family: $font-icon;
+      position: absolute;
+      @include size(42px, 42px);
+      top: 35%;
+      left: 50%;
+      margin-left: -21px;
+      margin-top: -21px;
+      font-size: 45px;
+      line-height: 1;
+      color: $white;
+      z-index: 99;
+    }
+  }
+  .post-title{
+    padding: 5px 0;
+    position: absolute;
+    bottom: 0;
+    @include size(100%, auto);
+    z-index: 99;
+    padding: 20px;
+    a{
+      font-size: 14px;
+      color: $white;
+      display: inline-block;
+      line-height: 1.3;
+      &:hover{
+        color: $theme-color;
+      }
+    }
+  }
+  &:hover{
+    .post-image a{
+      &:before{
+        display: none;
+      }
+    }
+  }
+}
+
+.post-hero-bottom{
+  .post-block{
+    position: relative;
+    .post-image a{
+      &:after, &:before{
+        display: none;
+      }
+    }
+    .post-content{
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      padding: 30px;
+      width: 100%;
+      background : linear-gradient(to top, rgba(22, 22, 22, 1), rgba(0, 0, 0, 0));
+      background : -webkit-linear-gradient(to top, rgba(22, 22, 22, 1), rgba(0, 0, 0, 0));
+      background : -o-linear-gradient(to top, rgba(22, 22, 22, 1), rgba(0, 0, 0, 0));
+      background : -moz-linear-gradient(to top, rgba(22, 22, 22, 1), rgba(0, 0, 0, 0));
+      z-index: 9;
+      .post-title a{
+        color: $white;
+        font-weight: 700;
+      }
+      .post-body{
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 16px;
+      }
+      .post-meta{
+        color: #ccc;
+      }
+    }
+  }
+}  
+
+.gallery-post{
+  position: relative;
+  .post-meta-wrap{
+    @include opacity(0);
+    background: $white;
+    position: absolute;
+    bottom: 30px;
+    left: 30px;
+    right: 30px;
+    padding: 20px;
+    @include transition(all 0.35s);
+    .post-title{
+      a{
+        font-size: 15px;
+        text-transform: uppercase;
+        font-family: $font-second;
+      }
+    }
+    @media(max-width: $screen-sm-max){
+      right: 30px;
+      left: auto;
+    }
+  }
+  &:hover{
+    .post-meta-wrap{
+      @include opacity(1);
+    }
+  }
+}
+
+//Post skin dark
+.style-dark{
+  .post-block{
+    background: $nocolor;
+    .post-title{
+      background: $nocolor;
+      a{
+        color: $white;
+        &:hover{
+          color: $theme-color;
+        }
+      }
+    }
+  }
+}
+
+.post-slideshow{
+   div[class*="col-"]{
+      padding: 0;
+   }
+}
+
+//----------------- Display post slider ------------------------
+.post-slider{
+  &.post-block{
+    &.v1{
+      background: none;
+      position: relative;
+      .left{
+        width: 55%;
+        float: left;
+      }
+      .right{
+        width: 45%;
+        height: 100%;
+        padding: 30px;
+        border: 1px solid $border-color;
+        border-left: 0;
+        position: absolute;
+        right: 0;
+        top: 0;
+        z-index: 1;
+      }
+      .entry-title{
+        margin: 20px 0;
+        a{
+          color: $black;
+          font-size: 30px;
+          font-weight: 700;
+          display: block;
+          line-height: 1.2;
+        }
+      }
+    }
+    &.v2{
+      position: relative;
+      .post-meta-wrap{
+        background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 2) 150%) repeat scroll 0 0;
+        background: -webkit-linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 2) 150%) repeat scroll 0 0;
+        background: -o-linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 2) 150%) repeat scroll 0 0;
+        background: -moz-linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 2) 150%) repeat scroll 0 0;
+        width: 100%;
+        padding: 50px 30px;
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        z-index: 9;
+        @include transition(all 0.35s);
+        @media(max-width: $screen-sm-max){
+          padding: 20px;
+        }
+         .post-title a{
+            padding: 5px 0;
+            font-size: 24px;
+            color: $white;
+            font-weight: 900;
+            line-height: 1.2;
+            @media(max-width: $screen-sm-max){
+              font-size: 18px;
+            }
+            &:hover{
+              color: $theme-color;
+            }
+         }
+      }
+      .post-body{
+        color: $white;
+        font-size: 16px;
+        color: rgba(255, 255, 255, 0.85);
+        @media(max-width: $screen-sm-max){
+          display: none;
+        }
+      }
+      .post-meta{
+         padding: 5px 0;
+         color: $white;
+      }
+      .post-categories{
+        a{
+          font-size: 14px;
+        }
+      }
+    }
+  }
+}
+
+//--------------------- Display post hero ---------------------------
+.post-style-hero{
+  .post-block{
+    position: relative;
+    .post-image a{
+      &:after, &:before{
+        display: none;
+      }
+    }
+    .post-content{
+      background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 2) 150%) repeat scroll 0 0;
+      background: -webkit-linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 2) 150%) repeat scroll 0 0;
+      background: -o-linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 2) 150%) repeat scroll 0 0;
+      background: -moz-linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 2) 150%) repeat scroll 0 0;
+      width: 100%;
+      padding: 20px;
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      z-index: 9;
+      text-align: left;
+      a{
+        color: $white;
+        font-weight: 700;
+        &:hover{
+          color: rgba(255, 255, 255, 0.8)!important;
+        }
+      }
+      .post-meta{
+        color: $white;
+        margin: 0;
+      }
+      .post-categories{
+        margin: 0;
+        a{
+          color: $white;
+          border-bottom-color: $white;
+        }
+      }
+    }
+  }
+}
+
+//--------------------- Display post stick --------------------------
+.post-style-stick{
+    .item-list > ul{
+       > li{
+          border-bottom: 1px dashed #e1e1e1;
+          display: block;
+          float: right;
+          overflow: hidden;
+          width: 50%;
+          clear: right;
+          @media(max-width: $screen-sm-max){
+            width: 100%;
+            clear: both;
+          }
+          .post-title, .post-meta, .post-meta-wrap{
+            clear: both;
+          }
+          &:last-child{
+            margin-bottom: 0!important;
+          }
+          &:after {
+             visibility: hidden;
+             display: block;
+             content: ".";
+             clear: right;
+             height: 0;
+          }
+          &:not(:first-child){
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+             .post-image{
+                display: none;
+             }
+             .post-title, .post-meta, .post-meta-wrap{
+              clear: none!important;
+             }
+             .post-content-inner, .content-body, .post-body{
+                display: none;
+             }
+             .post-title{
+                padding: 0;
+                a{
+                  font-size: 14px;
+                  line-height: 19.5px;
+                  display: block;
+                }
+             }
+          }
+          &:first-child{
+             border-bottom: 0 none;
+             display: block;
+             float: left;
+             padding-right: 15px!important;
+             width: 50%;
+             clear: none;
+             padding-bottom: 0;
+             margin-bottom: 0;
+              @media(max-width: $screen-sm-max){
+                width: 100%;
+                clear: both;
+                margin-bottom: 20px;
+              }
+              .post-title{
+                padding: 12px 0;
+                a{
+                  font-size: 18px;
+                  line-height: 28.5px;
+                }
+              }
+              .post-meta{
+                margin: 0 0 10px;
+              }
+              &:after {
+                content: none;
+              }
+          }
+       }
+    }
+   &.image{
+    .item-list > ul{
+       > li{
+        border: none;
+          &:not(:first-child){
+            margin-bottom: 20px;
+            padding-bottom: 0 ;
+           .post-image{
+            display: inline-block;
+              @include size(85px, auto);
+              float: left;
+           }
+           .post-content{
+              padding-left: 95px;
+           }
+           .post-title, .post-meta, .post-meta-wrap{
+            clear: none!important;
+           }
+           .post-content-inner, .content-body, .post-body{
+              display: none;
+           }
+        }
+      }
+    }
+  }
+  &.list{
+    .item-list > ul{
+      > li{
+	      width: 100%!important;
+        border-bottom: 1px solid #e1e1e1;
+        margin-bottom: 15px;
+        padding-bottom: 15px!important;
+        &:first-child{
+         border-bottom: 1px solid #e1e1e1;
+         display: block;
+         float: left;
+         padding-right: 0!important;
+         clear: none;
+         margin-bottom: 15px;
+        padding-bottom: 15px;
+        }
+        &:last-child{
+          border: none;
+        }
+	    }
+    }
+  }
+  &.v3{
+    .item-list > ul{
+      > li{
+        &:not(:first-child){
+          width: 40%;
+          .post-image{
+            width: 110px;
+          }
+          .post-content{
+            padding-left: 130px;
+          }
+        }
+        &:first-child{
+          border-bottom: 0 none;
+          display: block;
+          float: left;
+          padding-right: 20px!important;
+          width: 60%;
+          clear: none;
+          padding-bottom: 0;
+          margin-bottom: 0;
+          @media(max-width: $screen-sm-max){
+            width: 100%;
+            clear: both;
+            margin-bottom: 20px;
+          }
+          .post-block{
+            position: relative;
+            .post-title{
+              padding: 12px 0;
+              a{
+                font-size: 20px;
+                line-height: 28.5px;
+                color: $white;
+                &:hover{
+                  color: $theme-color;
+                }
+              }
+            } 
+            .post-image{
+              position: relative;
+              &:after{
+                content: "";
+                @include size(100%, 100%);
+                background: rgba(0, 0, 0, 0.6);
+                position: absolute;
+                top: 0;
+                left: 0;
+                z-index: 1;
+              }
+            }
+            .post-content{
+              position: absolute;
+              top: 50%;
+              left: 0;
+              @include size(100%, auto);
+              z-index: 99;
+              text-align: center;
+              padding: 0 30px;
+              @include translateY(-50%);
+            }
+            .post-meta{
+              margin: 0 0 10px;
+              color: $white;
+            }
+          }
+          &:after {
+            content: none;
+          }
+        }
+      } 
+    }    
+  }
+}
+
+//------------------------- Grid post -------------------------------
+.post-style-grid{
+  .post-block{
+    margin-bottom: 30px;
+    text-align: left;
+    @include transition(all 0.35s);
+    .post-categories{
+      margin: 0;
+    }
+    .post-title{
+      padding: 0;
+    }
+    .post-meta{
+      margin-top: 0;
+    }
+    .post-body{
+      padding: 10px 0 15px;
+    }
+    .post-content{
+      padding: 15px;
+      border: 1px solid $border-color;
+      border-top: none!important;
+    }
+    &:hover{
+      @include box-shadow(0 1px 8px 2px rgba(0, 0, 0, 0.1));
+    }
+  }
+}
+
+.node--view-mode-full{
+  .post-thumbnail{
+    margin-bottom: 10px;
+    iframe{
+      min-height: 400px;
+    }
+  }
+  .post-meta{
+    margin: 5px 0 10px;
+  }
+  .post-title{
+    margin: 0;
+  }
+  .post-categories{
+    padding-bottom: 0;
+    margin-bottom: 5px;
+  }
+  .node__content{
+    line-height: 2;
+  }
+}
+.node-detail{
+  padding-bottom: 35px;
+  iframe{
+    width: 100%;
+    display: block;
+  }
+  .post-thumbnail.post-gallery{
+    overflow: hidden;
+    .owl-nav{
+      @include opacity(1);
+    }
+  }
+}
+
+.categories-view-content{
+  &.layout-grid, &.layout-masonry{
+    .post-block{
+      margin-bottom: 30px;
+      text-align: left;
+      .post-categories{
+        margin: 0;
+        h2, h3, h4{
+          margin: 0;
+          line-height: 1;
+        }
+      }
+      .post-title{
+        padding: 0;
+      }
+      .post-meta{
+        margin-top: 0;
+      }
+      .post-body{
+        padding: 10px 0 15px;
+      }
+      .post-content{
+        padding: 15px;
+        border: 1px solid $border-color;
+        border-top: 0;
+      }
+    }
+  }
+  &.layout-list{
+    .post-block{
+      @include clearfix();
+      margin-bottom: 0;
+       .post-thumbnail{
+          width: 45%;
+          float: left;
+          @media(max-width: $screen-xs-max){
+            width: 100%;
+          }
+       }
+       .post-content{
+        width: 55%;
+        float: left;
+        padding-left: 30px;
+        @media(max-width: $screen-xs-max){
+          width: 100%;
+        }
+        .post-categories{
+          line-height: 1;
+          padding-bottom: 0;
+          margin-bottom: 0;
+          h2{
+            margin: 0;
+          }
+        }
+       }
+    }
+  }
+}
+
+//------------------------- Display post Highlight ------------------
+.list-highlight-post{
+  .item-list ul li{
+    padding: 0!important;
+    margin: 0;
+    .post-block{
+      background: $theme-color-second;
+      .post-image{
+         padding: 0;
+      }
+      .post-meta-wrap {
+        padding: 20px;
+        overflow: hidden;
+        *{
+          color: $white;
+          a:hover{
+            color: $theme-color;
+          }
+        }
+      }
+      .post-body{
+         padding-top: 10px;
+      }
+    }
+    &:nth-child(2n){
+      .post-image{
+        float: right!important;
+      }
+    }
+  }
+}
+
+//------------------ Display post list ---------------------
+.post-style-list{
+  .post-block{
+    clear: both;
+    .post-image{
+      width: 40%;
+      float: left;
+      @media(max-width: $screen-xs-max){
+        width: 100%;
+      }
+      img{
+        height: auto;
+        width: 100%;
+      }
+    }
+    .post-meta{
+      margin-top: 3px;
+    }
+    .post-content{
+      width: 60%;
+      padding-left: 15px;
+      float: left;
+      @media(max-width: $screen-xs-max){
+        width: 100%;
+        padding-left: 0;
+      }
+    }
+    .post-title{
+      padding-top: 0;
+    }
+    &.no-image{
+      .post-content{
+        width: 100%;
+        padding-left: 0;
+      }
+    }
+  }
+  &.small{
+    .post-block{
+      margin-bottom: 20px;
+      @include clearfix();
+    }
+    .post-image{
+      width: 100px;
+      height: auto;
+      @media(max-width: $screen-md-max){
+        width: 90px;
+      }
+    }
+    .post-content{
+      padding-left: 120px;
+      @media(max-width: $screen-md-max){
+        padding-left: 100px;
+      }
+      float: none;
+      width: 100%;
+    }
+    .post-title{
+      padding: 0;
+      a{
+        font-size: 14px;
+        margin-top: -5px;
+      }
+    }
+    .post-meta{
+      padding: 0;
+    }
+  }
+  &.bg-black{
+    padding: 30px 20px;
+    @media(max-width: $screen-md-max){
+      padding: 20px 15px;
+    }
+    .item-list > ul > li{
+      padding-bottom: 16px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      a{
+        -webkit-hyphens: auto;
+        -moz-hyphens:    auto;
+        -ms-hyphens:     auto;
+        hyphens:         auto;
+        word-wrap: break-word;
+      }
+      &:last-child{
+        border-bottom: none;
+      }
+    }
+    .post-block{
+      background: none!important;
+      .post-title{
+        a{
+          color: $white;
+          &:hover{
+            color: $theme-color;
+          }
+        }
+      }
+    }
+  }
+}
+
+
+//--------------------- Display post stick --------------------------
+.post-style-stick-v2{
+  .item-list{ 
+    margin-left: -15px;
+    margin-right: -15px;
+    > ul{
+      > li{
+        display: block;
+        width: 50%;
+        padding-left: 15px;
+        padding-right: 15px;
+        .post-block{
+          position: relative;
+          .post-content{
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            padding: 30px;
+            width: 100%;
+            background : linear-gradient(to top, rgba(22, 22, 22, 1), rgba(0, 0, 0, 0));
+            background : -webkit-linear-gradient(to top, rgba(22, 22, 22, 1), rgba(0, 0, 0, 0));
+            background : -o-linear-gradient(to top, rgba(22, 22, 22, 1), rgba(0, 0, 0, 0));
+            background : -moz-linear-gradient(to top, rgba(22, 22, 22, 1), rgba(0, 0, 0, 0));
+            z-index: 9;
+            .post-title a{
+              color: $white;
+              font-weight: 700;
+            }
+            .post-body{
+              color: rgba(255, 255, 255, 0.9);
+              font-size: 16px;
+              @media(max-width: $screen-sm-max){
+                display: none;
+              }
+            }
+            .post-meta{
+              color: #ccc;
+            }
+          }
+        }
+        &:not(:first-child){
+          width: 50%;
+          float: left;
+          @media(max-width: $screen-sm-max){
+            width: 100%;
+          }
+          &:nth-of-type(2n+2){
+            @include clearfix();
+            clear: both;
+          }
+          .post-title{
+            padding: 0;
+            a{
+              font-size: 14px;
+              line-height: 20px;
+              display: block;
+            }
+          }
+          .post-body{
+            display: none;
+          }
+        }
+
+        &:first-child{
+          border-bottom: 0 none;
+          display: block;
+          width: 100%;
+          clear: both;
+          .post-title{
+            padding: 12px 0;
+            a{
+              font-size: 24px;
+              font-weight: 900;
+              line-height: 28.5px;
+            }
+          }
+          .post-meta{
+            margin: 0 0 10px;
+          }
+          &:after {
+            content: none;
+          }
+        }
+      }
+    }  
+  }
+}
+
+
+//--------------------- Display post stick v4--------------------------
+.post-style-stick-v4{
+  .item-list{ 
+    margin-left: -15px;
+    margin-right: -15px;
+    > ul{
+      > li{
+        display: block;
+        width: 50%;
+        padding-left: 15px;
+        padding-right: 15px;
+        .post-block{
+          position: relative;
+        }
+        &:not(:first-child){
+          width: 50%;
+          float: left;
+          &:nth-of-type(2n+2){
+            @include clearfix();
+            clear: both;
+          }
+          .post-image{
+            width: 110px;
+            float: left;
+          }
+          .post-content{
+            padding-left: 130px;
+          }
+          .post-title{
+            padding: 0;
+            a{
+              font-size: 14px;
+              line-height: 20px;
+              display: block;
+            }
+          }
+          .post-body{
+            display: none;
+          }
+        }
+
+        &:first-child{
+          border-bottom: 0 none;
+          display: block;
+          width: 100%;
+          clear: both;
+          .post-title{
+            padding: 12px 0;
+            a{
+              font-size: 24px;
+              font-weight: 900;
+              line-height: 28.5px;
+            }
+          }
+
+          .post-content{
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            padding: 30px;
+            width: 100%;
+            background : linear-gradient(to top, rgba(22, 22, 22, 1), rgba(0, 0, 0, 0));
+            background : -webkit-linear-gradient(to top, rgba(22, 22, 22, 1), rgba(0, 0, 0, 0));
+            background : -o-linear-gradient(to top, rgba(22, 22, 22, 1), rgba(0, 0, 0, 0));
+            background : -moz-linear-gradient(to top, rgba(22, 22, 22, 1), rgba(0, 0, 0, 0));
+            z-index: 9;
+            .post-title a{
+              color: $white;
+              font-weight: 700;
+            }
+            .post-body{
+              color: rgba(255, 255, 255, 0.9);
+              font-size: 16px;
+            }
+            .post-meta{
+              color: #ccc;
+            }
+          }
+          .post-meta{
+            margin: 0 0 10px;
+          }
+          &:after {
+            content: none;
+          }
+        }
+      }
+    }  
+  }
+}
+
+.portfolio-v1{
+    position: relative;
+    @include transition(none);
+    .portfolio-content{
+      position: relative;
+      background: none;
+      &:after{
+        content: "";
+        background: none;
+        position: absolute;
+        top: 0;
+        left: 0;
+        @include size(100%, 100%);
+        z-index: 8;
+        @include opacity(0);
+        @include transition(all 0.35s);
+        @media(max-width: $screen-sm-max){
+          @include opacity(0.6);
+          background: rgba(0, 0, 0, 0.6);
+        }
+      }
+    }
+    .content{
+      background: none;
+      position: absolute;
+      top: 50%;
+      @include translate(0, -20%);
+      left: 0;
+      width: 100%;
+      z-index: 11;
+      @include opacity(0);
+      @include transition(all 0.35s);
+      text-align: center;
+      height: auto;
+      @media(max-width: $screen-sm-max){
+        @include opacity(1);
+        @include translate(0, -50%); 
+      }
+      .title a{
+        font-size: 14px;
+        font-weight: 700;
+        color: $white;
+        text-transform: uppercase;
+        display: inline-block;
+        padding-bottom: 10px;
+        position: relative;
+        font-family: $font-second;
+        &:after{
+          content: "";
+          position: absolute;
+          @include size(30px, 2px);
+          background: $theme-color;
+          bottom: 0;
+          left: 50%;
+          margin-left: -15px;
+          z-index: 1;
+        }
+        &:hover{
+          color: $theme-color;
+        }
+      }
+      .category a{
+        font-size: 13px;
+        color: $white;
+        font-weight: 400;
+        display: inline-block;
+        margin-top: 10px;
+        font-family: $font-second;
+      }
+      a:hover{
+        color: $theme-color;
+      }
+    }
+    &:hover{
+      .portfolio-content{
+        &:after{
+          @include opacity(1);
+          background: rgba(0, 0, 0, 0.6);
+        }
+      }
+      .xcolor{
+        @include opacity(1);
+        @include scale(1);
+      }
+      .content{
+        @include opacity(1);
+        @include translate(0, -50%); 
+      }
+    }
+  }  
+
+  .testimonial-carousel{
+    .item{
+      margin: 3px;
+    }
+    .testimonial-v1{
+      background: $white;
+      padding: 30px;  
+      @include box-shadow(0px 0px 5px -2px rgba(0, 0, 0, 0.4));
+      .quote{
+        font-size: 16px;
+        font-style: italic;
+      }
+      .avatar{
+        margin-top: 10px;
+        @include size(60px, 60px);
+        img{
+          @include border-radius(50%);
+        }
+      }
+      .content-inner{
+        padding-top: 30px;
+        @media(max-width: $screen-sm-max){
+          padding-top: 10px;
+        }
+        iframe{
+          min-height: 315px;
+          width: 100%;
+        }
+        .title{
+          margin-top: 10px;
+          font-size: 16px;
+          font-weight: 700;
+          color: $theme-color;
+          text-transform: uppercase;
+        }
+      }  
+    }
+    .testimonial-v2{
+      padding: 0 20%;
+      @media(max-width: $screen-sm-max){
+        padding: 0 20px;
+      }
+      .quote{
+        font-size: 18px;
+        font-style: italic;
+      }
+      .avatar{
+        display: inline-block;
+        margin-top: 10px;
+        @include size(60px, 60px);
+        img{
+          @include border-radius(50%);
+        }
+      }
+      .content-inner{
+        iframe{
+          min-height: 315px;
+          width: 100%;
+        }
+        .title{
+          margin-top: 10px;
+          font-size: 16px;
+          font-weight: 700;
+          color: $theme-color;
+          text-transform: uppercase;
+        }
+      }  
+    }
+  }  

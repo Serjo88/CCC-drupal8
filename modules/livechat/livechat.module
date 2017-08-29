@@ -1,0 +1,85 @@
+<?php
+
+use Drupal\Component\Utility\Unicode;
+use Drupal\Core\Path\PathMatcher;
+use Drupal\Core\Url;
+
+//adding livechat code when conditions are met
+function livechat_page_attachments(array &$page) {
+ 
+  $config = \Drupal::config('livechat.settings');
+  
+  $path = \Drupal::service('path.current')->getPath();
+  
+  if (empty($config->get('licence_number'))) {
+    return;
+  }
+
+  $is_admin_page = true;
+  if(!_livechat_active($path))
+  {
+	$is_admin_page = false;
+  }
+   
+  $js_settings = [
+    'licence_number'  => $config->get('licence_number'),
+	'livechat_mobile' => $config->get('livechat_mobile'),
+	'livechat_sounds' => $config->get('livechat_sounds'),
+	'is_admin_page'	  => $is_admin_page
+  ];
+
+  $page['#attached']['drupalSettings']['livechat'] = $js_settings;
+
+  $page['#attached']['library'][] = 'livechat/livechat';
+  
+}
+
+//checking if url contains "admin" 
+function _livechat_active($path) {
+ 
+  $page_match = false;
+  
+  if(strpos($path,"admin")){
+	  $page_match = true ; 
+  }
+
+  return $page_match;
+}
+
+ //this hook takes care of chaning default settings for submit button and adds 
+ //custom css to the form when livechat_loging input field is disabled
+ function livechat_form_livechat_admin_settings_form_alter(&$form, &$form_state, $form_id) {
+	 
+	$form['actions']['submit']['#value'] = "Save configuration";
+	
+	$form['actions']['submit']['#states'] = array(
+				'visible' => array(
+					':input[name="settings"]' => array('value' => '1'),
+				),
+			);
+	
+	if($form['livechat_login']['#attributes']['disabled']) {
+		
+		unset($form['actions']['submit']);
+		
+		$form['#attached']['library'] = 'livechat/livechat';
+		
+		$form['settings']['#attributes'] = array(
+			'class' => array('container-inline'),
+			'style' => array('display: none;')
+		);
+		
+		$form['reset']['#attributes'] = array(
+			'class' => array('container-inline, edit-submit'),
+			'style' => array('display: block;')
+		);
+		
+		
+	}else{
+		$form['actions']['submit']['#attributes'] = array(
+			'class' => array('container-inline'),
+			'style' => array('margin-top: 10px;')
+		);
+	}
+
+}

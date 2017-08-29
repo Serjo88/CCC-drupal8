@@ -1,0 +1,25 @@
+name: 'Emon Features'
+type: module
+core: 8.x
+dependencies:
+  - block
+  - block_class
+  - block_content
+  - quicktabs
+  - comment
+  - features
+  - simplenews
+  - field
+  - file
+  - image
+  - menu_ui
+  - node
+  - options
+  - path
+  - rdf
+  - system
+  - taxonomy
+  - text
+  - user
+  - views
+version: 8.x-1.0

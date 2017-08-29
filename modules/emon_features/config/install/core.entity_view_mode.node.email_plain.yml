@@ -1,0 +1,12 @@
+langcode: en
+status: false
+dependencies:
+  enforced:
+    module:
+      - simplenews
+  module:
+    - node
+id: node.email_plain
+label: 'Email: Plain'
+targetEntityType: node
+cache: true

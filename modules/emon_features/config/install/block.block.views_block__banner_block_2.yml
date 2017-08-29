@@ -1,0 +1,27 @@
+langcode: en
+status: false
+dependencies:
+  config:
+    - views.view.banner
+  module:
+    - block_class
+    - views
+  theme:
+    - gavias_emon
+third_party_settings:
+  block_class:
+    classes: overflow-visible
+id: views_block__banner_block_2
+theme: gavias_emon
+region: '-1'
+weight: -20
+provider: null
+plugin: 'views_block:banner-block_2'
+settings:
+  id: 'views_block:banner-block_2'
+  label: ''
+  provider: views
+  label_display: '0'
+  views_label: ''
+  items_per_page: none
+visibility: {  }

@@ -1,0 +1,17 @@
+name: 'Splashify'
+type: module
+description: 'Display a splash page anywhere on the site.'
+
+# version: '8.x-1.0'
+# core: '8.x'
+
+dependencies:
+  - libraries
+  - colorbox
+  - field_group
+
+# Information added by Drupal.org packaging script on 2016-11-28
+version: '8.x-2.0-alpha1'
+core: '8.x'
+project: 'splashify'
+datestamp: 1480367631

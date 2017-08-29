@@ -1,0 +1,22 @@
+<div class="clearfix post-slider post-block v2 gavias-slide-bottom">
+   <div class="post-inner">
+	  <div class="image">
+			{{ fields.field_image.content }}
+	  </div>
+	  <div class="post-meta-wrap">
+		 	<div class="post-meta no-margin">
+		 		{% if fields.field_post_category.content %}
+				 	<div class="post-categories caption-title">
+						{{ fields.field_post_category.content }} 
+				 	</div>
+			 	{% endif %}
+			</div>
+		 <div class="post-title caption-title">
+			{{ fields.title.content }}
+		 </div>
+		 <div class="post-body caption-description">
+			{{ fields.body.content }}
+		 </div>
+	  </div>
+   </div>
+</div>

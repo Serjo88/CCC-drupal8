@@ -1,0 +1,13 @@
+<div{{ attributes.addClass(classes) }}>
+    <div class="{{ inner_class_css }}">
+        {% if(links) %}
+            <div class="builder-action-links-wrapper">
+                <div class="builder-element-tag"><span title="{{ 'Drag to re-order'|t }}" class="icon-move"></span>{{ delta }}</div>
+                {{ links }}
+            </div>
+        {% endif %}
+        <div class="builder-element-inside">
+            <div class="{{ children_wrapper_class }}">{{ children }}</div>
+        </div>
+    </div>
+</div>

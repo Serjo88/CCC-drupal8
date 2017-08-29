@@ -1,0 +1,64 @@
+builder-ui:
+  css:
+    theme:
+      css/builder-grid.css: {}
+      css/builder-ui.css: {}
+      css/icons/css/font.css: {}
+  js:
+    js/builder-ui.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/jquery.once
+    - core/drupal.dialog
+    - core/drupal.ajax
+    - core/jquery.ui.sortable
+    - core/jquery.ui.draggable
+    - core/jquery.ui.droppable
+builder:
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/jquery.once
+  css:
+    theme:
+      css/builder-grid.css: {}
+      css/animate.css: {}
+      css/builder.css: {}
+  js:
+    js/builder.js: {}
+builder_map:
+  js:
+    https://maps.googleapis.com/maps/api/js?v=3&libraries=places: { type: external, minified: true }
+    js/builder_map.js: {}
+builder-vertical-tabs:
+  version: VERSION
+  css:
+    component:
+      css/components/vertical-tabs.css: {}
+
+builder.jquery.ui:
+  version: VERSION
+  css:
+    component:
+      css/components/jquery.ui/theme.css: { weight: -1 }
+
+builder.drupal.dialog:
+  version: VERSION
+  css:
+    theme:
+      css/components/dialog.theme.css: {}
+  js:
+    js/builder-dialog.js: {}
+builder.css.box:
+  version: VERSION
+  css:
+    theme:
+      css/components/css-box.css: {}
+builder.horizontal.tabs:
+  version: VERSION
+  css:
+    theme:
+      css/horizontal_tabs.css: {}
+  js:
+      js/horizontal_tabs.js: {}

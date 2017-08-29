@@ -1,0 +1,8 @@
+name: builder
+type: module
+description: Drupal drag & drop Builder.
+core: 8.x
+package: Tabvn
+version: '8.x-1.0'
+dependencies:
+  - field

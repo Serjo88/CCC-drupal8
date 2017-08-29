@@ -1,0 +1,124 @@
+/****/
+.swiper-wrapper {
+  background: #ccc;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+}
+.swiper-wrapper:before {
+  content: "";
+  width: 65px;
+  height: 65px;
+  border-radius: 50%;
+  -webkit-border-radius: 50%;
+  -moz-border-radius: 50%;
+  -ms-border-radius: 50%;
+  -o-border-radius: 50%;
+  background: url(../images/preloader/preloader-10.gif) no-repeat rgba(255, 255, 255, 0.3);
+  text-align: center;
+  margin-top: -30px;
+  margin-left: -30px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 9;
+}
+.swiper-wrapper.slick-initialized {
+  max-height: 999px !important;
+  background: none;
+}
+.swiper-wrapper.slick-initialized:before {
+  display: none !important;
+}
+
+.block-quicktabs {
+  position: relative;
+}
+.block-quicktabs ul.quicktabs-tabs {
+  padding: 0;
+  border: none;
+  background: none !important;
+  display: inline-block;
+  float: right;
+  position: absolute;
+  right: 0;
+  top: 8px;
+  z-index: 99;
+}
+.block-quicktabs ul.quicktabs-tabs > li {
+  background: none;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  position: relative;
+}
+.block-quicktabs ul.quicktabs-tabs > li > a {
+  font-size: 14px;
+  text-transform: none;
+  font-family: "Roboto", serif;
+  font-weight: 700;
+  padding: 0;
+  padding-right: 20px;
+}
+@media (max-width: 767px) {
+  .block-quicktabs ul.quicktabs-tabs > li > a {
+    padding-right: 10px;
+  }
+}
+.block-quicktabs ul.quicktabs-tabs > li:last-child > a {
+  padding-right: 0;
+}
+.block-quicktabs ul.quicktabs-tabs > li.ui-tabs-active > a {
+  color: #4698D5;
+}
+.block-quicktabs .quicktabs-main {
+  border: none;
+  padding: 0;
+  border-radius: 0;
+  -webkit-border-radius: 0;
+  -moz-border-radius: 0;
+  -ms-border-radius: 0;
+  -o-border-radius: 0;
+}
+.block-quicktabs .quicktabs-main .ui-tabs-panel {
+  padding: 0 !important;
+}
+.block-quicktabs .block {
+  margin-bottom: 0 !important;
+}
+
+.gva-mega-menu .block.block-quicktabs ul.quicktabs-tabs {
+  width: 15%;
+  float: left !important;
+  position: relative !important;
+}
+.gva-mega-menu .block.block-quicktabs ul.quicktabs-tabs > li {
+  background: none;
+  padding: 0;
+  margin: 0;
+  position: relative;
+  width: 100%;
+  float: left;
+  clear: both;
+  padding-right: 20px;
+}
+.gva-mega-menu .block.block-quicktabs ul.quicktabs-tabs > li > a {
+  font-size: 12px;
+  text-transform: uppercase;
+  font-family: "Roboto", serif;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  font-weight: 700;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+  width: 100%;
+}
+.gva-mega-menu .block.block-quicktabs ul.quicktabs-tabs > li:last-child > a {
+  padding-right: 0;
+}
+.gva-mega-menu .block.block-quicktabs ul.quicktabs-tabs > li.ui-tabs-active > a {
+  color: #4698D5;
+}
+.gva-mega-menu .block.block-quicktabs .quicktabs-main {
+  float: left !important;
+  width: 85%;
+}

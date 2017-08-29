@@ -1,0 +1,7 @@
+
+use builder:
+  title: 'Use builder'
+  description: 'Allow user can use drag drop builder.'
+administer builder:
+  title: 'Administer builder'
+  description: 'Administrator builder, content builder permissions.'

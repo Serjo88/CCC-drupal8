@@ -1,0 +1,43 @@
+<div class="builder-css-box row">
+    <div class="col-xs-5">
+        <div class="builder-css-box">
+            <div class="builder-margin-wrapper">
+                <label>
+                    {% trans %}
+                    margin
+                    {% endtrans %}
+                </label>
+                {{ margin }}
+
+                <div class="builder-border-wrapper">
+                    <label>
+                        {% trans %}
+                        border
+                        {% endtrans %}
+                    </label>
+                    {{ border }}
+                    <div class="builder-padding-wrapper">
+                        <label>
+                            {% trans %}
+                            padding
+                            {% endtrans %}
+                        </label>
+                        {{ padding }}
+                        <div class="builder-css-box-content">
+                            <span>{{ builder_element_content }}</span>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-7">
+        <div class="builder-background-wrapper">
+            {{ extra }}
+        </div>
+
+    </div>
+
+</div>

@@ -1,0 +1,77 @@
+/**
+ * jPreloader
+ */
+ @media(max-width:780px){
+  #jpreContent{
+    display: none!important;
+  }
+ }
+ @media(min-width: 780px){
+    .js-preloader .body-page {
+      opacity: 0;
+    }
+    .js-preloader.preloader-done .body-page {
+      opacity: 1!important;
+    }
+    #jpreContent {
+      display: none;
+    }
+    #jpreLoader {
+      height: 4px;
+      width: 100%;
+      top: 0 !important;
+    }
+    #jpreOverlay { 
+      background-color: transparent;
+      height: auto !important;
+      top: 0 !important;
+      position: absolute !important;
+    }
+    #jpreSlide {
+      width: 100%;
+      text-align: center;
+      top: auto !important;
+      bottom: 50%;
+    }
+    #jpreSlide #jpreContent {
+      display: block;
+      position: relative;
+      margin-bottom: 40px;
+    }
+    .js-preloader #jpreOverlay {
+      background-color: #ffffff;
+      height: 100% !important;
+      position: fixed !important;
+    }
+    .js-preloader #jpreLoader {
+      top: 50% !important;
+      height: 10px;
+      margin-top: -5px;
+    }
+    .js-preloader #jprePercentage {
+      display: block !important;
+      text-align: center;
+    }
+    #jpreBar {
+      z-index: 2;
+      background-color: #000000;
+    }
+    #jpreButton,
+    #jprePercentage {
+      display: none !important;
+    }
+    #jprePercentage {
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 30px;
+    }
+}
+
+.preloader-wrapper {
+  display: inline-block;
+  position: relative;
+  width: 60px;
+  height: 60px; 
+  text-align: center;
+}

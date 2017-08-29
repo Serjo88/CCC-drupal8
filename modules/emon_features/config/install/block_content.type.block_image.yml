@@ -1,0 +1,7 @@
+langcode: en
+status: true
+dependencies: {  }
+id: block_image
+label: 'Block image'
+revision: 0
+description: 'Display block attach images.'

@@ -1,0 +1,18 @@
+{# define variables for this template #}
+{% set webinar_title = node.label %}
+{% set webinar_teaser_title = content.field_teaser_title %}
+{% set webinar_date = content.field_webinar_date %}
+{% set webinar_body = content.body %}
+
+
+
+<div{{ attributes }}>
+	{# make sure contextual links are rendered #}
+	{{ title_prefix }}
+	{{ title_suffix }}
+	<div class="webinar-teaser">
+		<div class="col-md-12"><a href="{{ url }}"><h4>{{ webinar_title }}</h4><h5>{{ webinar_teaser_title }}</h5></a></div>
+		<div class="col-md-12">{{ webinar_body }}</div>
+		{# <div class="col-md-4"><strong>{{ webinar_date }}</strong></div> #}
+	</div>
+</div>

@@ -1,0 +1,31 @@
+@import "vars/_theme_variables";
+
+@import "mixins/mixins";
+@import "mixins/template";
+@import "rtl/rtl"; 
+
+.entity-meta{
+   @include box-shadow(none);
+  details[open]{
+     background: none;
+     border: none;
+   }
+}
+.vertical-tabs__panes{
+   border: 0!important;
+}
+
+input[type="text"], 
+input[type="tel"],
+input[type="password"],
+input[type="email"],
+textarea, select{
+  background-color: #fff;
+  @include box-shadow(0 0 2px 2px rgba(0, 0, 0, 0.02) inset);
+  border: 1px solid $border-color;
+  padding: 5px 10px;
+}
+
+.form-item{
+   padding-bottom: 10px;
+}
