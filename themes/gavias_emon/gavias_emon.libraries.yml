@@ -20,10 +20,7 @@ global-styling:
     vendor/waypoint.js: {}
     vendor/jpreloader.min.js: {}
     vendor/masonry.pkgd.min.js: {}
-    vendor/isotope.pkgd.min.js: {}
     js/theme.plugins.js: {}
-    js/expandinglists.js: {}
-    js/popup.js: {}
   dependencies:
     - core/jquery
     - core/drupal

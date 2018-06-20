@@ -127,7 +127,7 @@ class SharethisConfigurationForm extends ConfigFormBase {
     $button_choice = $current_options_array['buttons'];
     // Create the variables related to services chosen.
     $service_string = $current_options_array['services'];
-    $service_string_markup = "";
+    $service_string_markup = [];
     foreach (explode(",", $service_string) as $string) {
       $key = explode(":", Unicode::substr($string, 0, -1));
       $key = $key[1];

@@ -85,7 +85,7 @@
 							{% set cl_main = 'col-xs-12 col-md-6 col-md-push-3 sb-r sb-l ' %}
 						{% elseif page.sidebar_right or page.sidebar_left %}	
 							{% if page.sidebar_right %}
-							 	{% set cl_main = 'col-xs-12 col-md-8 sb-r ' %}
+							 	{% set cl_main = 'col-xs-12 col-sm-8 col-md-8 sb-r ' %}
 							{% endif %} 		
 							{% if page.sidebar_left %}
 								{% set cl_main = 'col-xs-12 col-md-8 col-md-push-4 sb-l ' %}
@@ -136,7 +136,7 @@
 						<!-- Sidebar Right -->
 						{% if page.sidebar_right %}
 							
-							{% set cl_right = 'col-lg-4 col-md-4 col-sm-12 col-xs-12'  %}
+							{% set cl_right = 'col-lg-4 col-md-4 col-sm-4 col-xs-12'  %}
 							{% if page.sidebar_left %}
 								{% set cl_right = 'col-lg-3 col-md-3 col-sm-12 col-xs-12' %}
 							{% endif %}	 

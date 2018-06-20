@@ -84,6 +84,16 @@ if(!class_exists('gsc_counter')):
          $class[] = $el_class;
          $class[] = $type;
          $class[] = $style_text;
+          
+          /* check for Jeff's formula token */
+          if ($number == "GET_NUMBER") {
+              /* just some example formula */
+              $outputnumber = file_get_contents("files/scrubs.txt");
+          }
+          else {
+              /* fallback */
+              $outputnumber = $number;
+          }
          ?>
          <?php ob_start(); ?>
          <div class="widget milestone-block <?php if(count($class) > 0){ print implode($class, ' '); } ?>">
@@ -91,7 +101,7 @@ if(!class_exists('gsc_counter')):
                <div class="milestone-icon"><i class="<?php print $icon; ?>"></i></div>
             <?php } ?>   
             <div class="milestone-right">
-               <div class="milestone-number"><?php print $number; ?></div>
+               <div class="milestone-number"><?php print $outputnumber; ?></div>
                <div class="milestone-text"><?php print $title ?></div>
             </div>
          </div>

@@ -115,8 +115,10 @@
         {{ content.field_image }}
       {% endif %}  
     </div>
-
+    
     <div class="post-content">
+    
+            <span class="post-created"><p><em>{{ date }}</em></p></span>
 
       <div{{ content_attributes.addClass('node__content', 'clearfix') }}>
         {{ content|without('field_image','field_post_category', 'field_post_format', 'field_post_type', 'field_post_embed', 'field_post_gallery') }}

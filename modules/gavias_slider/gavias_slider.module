@@ -40,7 +40,7 @@ function gavias_slider_slides($sid) {
     $slidershow = gavias_slider_load($sid);
     $settings = $slidershow->settings;
 
-    $vars['attributes']['style'] = 'min-height: 350px';
+    $vars['attributes']['style'] = 'min-height: 200px';
     $vars['attributes']['class'] = 'gavias-slider swiper-container first-el-true';
     $vars['attributes']['data-height'] = (isset($settings->startheight) && $settings->startheight) ? $settings->startheight : '700';
     $vars['attributes']['data-fullheight'] = (isset($settings->fullheight) && $settings->fullheight) ? $settings->fullheight : 'false';

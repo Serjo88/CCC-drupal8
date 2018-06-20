@@ -87,7 +87,7 @@
         }
        }
 
-       $(window).load(animationDimensions());
+       $(window).on("load",animationDimensions());
         $(window).on("debouncedresize", function(event) {
            setTimeout(function() {
                animationDimensions();
@@ -131,7 +131,7 @@
 
        if ($(window).width() < 780) {
 
-         $window_height = 500;
+         $window_height = 250;
 
        } else if ($fullHeight == 'true') {
 
@@ -171,7 +171,7 @@
    }
 
   $(document).ready(function(){
-      $(window).load(function() {
+      $(window).on("load",function(){
         if (!jQuery.browser.mobile){
           $(".youtube-bg").mb_YTPlayer();
         }

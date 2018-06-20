@@ -33,7 +33,8 @@
         $(this).owlCarousel({
           nav: true,
           autoplay: true,
-          autoplayTimeout: 5000,
+          autoplayTimeout:2000,
+          autoplayHoverPause:true,
           smartSpeed: 350,
           navText: [ '<i class="fa fa-angle-left"></i>', '<i class="fa fa-angle-right"></i>' ],
           autoHeight: false,
